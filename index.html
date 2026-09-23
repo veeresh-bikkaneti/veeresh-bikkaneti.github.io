@@ -235,7 +235,7 @@
       background: var(--glow); color: var(--accent);
     }
     .card-icon svg { width: 1.3rem; height: 1.3rem; }
-    .card h3 { font-size: 1.08rem; font-weight: 700; }
+    .card h3 { font-size: 1.08rem; font-weight: 700; overflow-wrap: anywhere; }
     /* whole card is clickable via the title link; secondary links sit above it */
     .card h3 a { color: var(--text); text-decoration: none; }
     .card h3 a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
@@ -328,7 +328,7 @@
           </div>
           <ul class="stats" aria-label="At a glance">
             <li><strong>20+</strong> years in QA</li>
-            <li><strong id="stat-sites">6</strong> live sites</li>
+            <li><strong id="stat-sites">4</strong> live sites</li>
             <li><strong id="stat-repos">45+</strong> public repos</li>
             <li>Lincoln, Nebraska</li>
           </ul>
@@ -341,7 +341,7 @@
       <div class="wrap">
         <div class="section-head">
           <div>
-            <h2 id="sites-title">Live sites <span class="count" id="sites-count">6</span></h2>
+            <h2 id="sites-title">Live sites <span class="count" id="sites-count">4</span></h2>
             <p>Everything I host on GitHub Pages — tools, learning resources, and my blog.</p>
           </div>
         </div>
@@ -396,28 +396,6 @@
               <p class="desc">A starting point for building and learning TestNG-based test automation.</p>
               <div class="meta"><span class="tag live">Live</span><span class="lang" style="--dot:#b07219">Java</span></div>
               <div class="links"><a href="https://github.com/veeresh-bikkaneti/beginnersguidefortesting">Source code</a></div>
-            </article>
-          </li>
-          <li>
-            <article class="card" data-repo="SeleniumTestNGParallelExtentReports">
-              <div class="card-top">
-                <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></span>
-                <div><h3><a href="https://veeresh-bikkaneti.github.io/SeleniumTestNGParallelExtentReports/">Selenium + TestNG Parallel Runs</a></h3></div>
-              </div>
-              <p class="desc">Parallel Selenium execution with TestNG and Extent Reports for readable test results.</p>
-              <div class="meta"><span class="tag live">Live</span><span class="lang" style="--dot:#b07219">Java</span></div>
-              <div class="links"><a href="https://github.com/veeresh-bikkaneti/SeleniumTestNGParallelExtentReports">Source code</a></div>
-            </article>
-          </li>
-          <li>
-            <article class="card" data-repo="SpecFlowDataTable">
-              <div class="card-top">
-                <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></span>
-                <div><h3><a href="https://veeresh-bikkaneti.github.io/SpecFlowDataTable/">SpecFlow Data Tables</a></h3></div>
-              </div>
-              <p class="desc">Working with Gherkin data tables in SpecFlow step definitions (C# / .NET BDD).</p>
-              <div class="meta"><span class="tag live">Live</span><span class="lang" style="--dot:#178600">C#</span></div>
-              <div class="links"><a href="https://github.com/veeresh-bikkaneti/SpecFlowDataTable">Source code</a></div>
             </article>
           </li>
         </ul>
@@ -475,6 +453,20 @@
               <h3><a href="https://github.com/veeresh-bikkaneti/cucumberBDDParallel">cucumberBDDParallel</a></h3>
               <p class="desc">Cucumber-JVM BDD framework running features in parallel with TestNG and Cluecumber reports.</p>
               <div class="meta"><span class="lang" style="--dot:#b07219">Java</span><span class="tag">★ 2</span></div>
+            </article>
+          </li>
+          <li>
+            <article class="card" data-repo="SeleniumTestNGParallelExtentReports">
+              <h3><a href="https://github.com/veeresh-bikkaneti/SeleniumTestNGParallelExtentReports">SeleniumTestNGParallelExtentReports</a></h3>
+              <p class="desc">Parallel Selenium execution with TestNG and Extent Reports for readable test results.</p>
+              <div class="meta"><span class="lang" style="--dot:#b07219">Java</span></div>
+            </article>
+          </li>
+          <li>
+            <article class="card" data-repo="SpecFlowDataTable">
+              <h3><a href="https://github.com/veeresh-bikkaneti/SpecFlowDataTable">SpecFlowDataTable</a></h3>
+              <p class="desc">Working with Gherkin data tables in SpecFlow step definitions (C# / .NET BDD).</p>
+              <div class="meta"><span class="lang" style="--dot:#178600">C#</span></div>
             </article>
           </li>
         </ul>
