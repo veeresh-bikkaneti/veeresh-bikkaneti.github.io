@@ -275,6 +275,73 @@
     footer a:hover { color: var(--text); }
 
     .note { font-size: .85rem; color: var(--muted); margin-block-start: 1rem; }
+
+    /* ---------- Veer chatbot ---------- */
+    .veer-fab {
+      position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 80;
+      display: inline-flex; align-items: center; gap: .6rem;
+      padding: .8rem 1.1rem; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--accent); color: var(--on-accent); font: 600 .95rem/1 var(--font);
+      box-shadow: var(--shadow); cursor: pointer; transition: transform .15s, box-shadow .15s;
+    }
+    .veer-fab:hover { transform: translateY(-1px); }
+    .veer-fab svg { width: 1.25rem; height: 1.25rem; flex: none; }
+    .veer-fab .veer-fab-label { display: none; }
+    @media (min-width: 30rem) { .veer-fab .veer-fab-label { display: inline; } }
+    .veer-fab[aria-expanded="true"] { background: var(--surface); color: var(--text); }
+
+    .veer-panel {
+      position: fixed; right: 1.25rem; bottom: calc(1.25rem + 4rem); z-index: 81;
+      width: min(23rem, calc(100vw - 2.5rem)); max-height: min(32rem, calc(100vh - 8rem));
+      display: flex; flex-direction: column; overflow: hidden;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .veer-panel[hidden] { display: none; }
+    .veer-head {
+      display: flex; align-items: center; gap: .6rem; padding: .9rem 1rem;
+      border-bottom: 1px solid var(--border); background: var(--surface-2);
+    }
+    .veer-avatar {
+      display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: 50%; flex: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent);
+      font: 800 .8rem/1 var(--font);
+    }
+    .veer-head-text { flex: 1; min-width: 0; }
+    .veer-head-text strong { display: block; font-size: .95rem; color: var(--text); }
+    .veer-head-text span { display: block; font-size: .78rem; color: var(--muted); }
+    .veer-close {
+      flex: none; display: inline-grid; place-items: center; width: 2rem; height: 2rem;
+      border-radius: var(--radius-sm); border: 1px solid transparent; background: transparent; color: var(--muted); cursor: pointer;
+    }
+    .veer-close:hover { color: var(--text); background: var(--surface); border-color: var(--border); }
+    .veer-log {
+      flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .65rem;
+      font-size: .92rem;
+    }
+    .veer-msg { max-width: 88%; padding: .55rem .8rem; border-radius: var(--radius-sm); line-height: 1.5; overflow-wrap: anywhere; }
+    .veer-msg.bot { align-self: flex-start; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .veer-msg.user { align-self: flex-end; background: var(--accent); color: var(--on-accent); }
+    .veer-msg a { color: inherit; text-decoration: underline; }
+    .veer-msg.bot a { color: var(--accent); }
+    .veer-chips { display: flex; flex-wrap: wrap; gap: .4rem; padding: 0 1rem .75rem; }
+    .veer-chip {
+      font: 500 .8rem/1.3 var(--font); padding: .35rem .7rem; border-radius: 999px;
+      background: var(--surface-2); border: 1px solid var(--border); color: var(--text); cursor: pointer;
+    }
+    .veer-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .veer-form { display: flex; gap: .5rem; padding: .75rem; border-top: 1px solid var(--border); }
+    .veer-input {
+      flex: 1; min-width: 0; padding: .6rem .8rem; border-radius: var(--radius-sm); border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font: inherit;
+    }
+    .veer-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .veer-send {
+      flex: none; display: inline-grid; place-items: center; width: 2.6rem; border-radius: var(--radius-sm);
+      border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); cursor: pointer;
+    }
+    .veer-send svg { width: 1.15rem; height: 1.15rem; }
+    .veer-send:disabled { opacity: .5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -512,6 +579,34 @@
     </div>
   </footer>
 
+  <!-- Veer: a small on-page assistant that answers questions about Veeresh using canned, on-site knowledge (no server, no API key). -->
+  <button class="veer-fab" id="veer-fab" type="button" aria-haspopup="dialog" aria-controls="veer-panel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span class="veer-fab-label">Ask Veer</span>
+  </button>
+
+  <section class="veer-panel" id="veer-panel" role="dialog" aria-modal="false" aria-labelledby="veer-title" hidden>
+    <div class="veer-head">
+      <span class="veer-avatar" aria-hidden="true">V</span>
+      <div class="veer-head-text">
+        <strong id="veer-title">Veer</strong>
+        <span>Ask about Veeresh's work</span>
+      </div>
+      <button class="veer-close" id="veer-close" type="button" aria-label="Close chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="veer-log" id="veer-log" role="log" aria-live="polite"></div>
+    <div class="veer-chips" id="veer-chips"></div>
+    <form class="veer-form" id="veer-form">
+      <label class="sr-only" for="veer-input">Ask Veer a question</label>
+      <input class="veer-input" id="veer-input" type="text" autocomplete="off" placeholder="e.g. What's your testing experience?">
+      <button class="veer-send" type="submit" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+      </button>
+    </form>
+  </section>
+
   <script>
     /* ---- Theme toggle: two states — system default, or pinned opposite ---- */
     (() => {
@@ -584,6 +679,156 @@
         document.getElementById("sites-count").textContent = total;
         document.getElementById("stat-sites").textContent = total;
       } catch (e) { /* offline or rate-limited: static list still works */ }
+    })();
+
+    /* ---- Veer: rule-based Q&A over a small on-page knowledge base. Runs entirely
+       client-side — no API key, no backend, works unchanged on GitHub Pages. ---- */
+    (() => {
+      const fab = document.getElementById("veer-fab");
+      const panel = document.getElementById("veer-panel");
+      const closeBtn = document.getElementById("veer-close");
+      const log = document.getElementById("veer-log");
+      const chipsEl = document.getElementById("veer-chips");
+      const form = document.getElementById("veer-form");
+      const input = document.getElementById("veer-input");
+
+      const KB = [
+        {
+          id: "role",
+          keywords: ["who", "what do you do", "role", "job", "title", "does veeresh do", "about you"],
+          answer: "Veeresh is a Business Analyst, Product Owner, Certified ScrumMaster, and QA Architect with 20+ years in enterprise software delivery — he's worked as BA, PO, Scrum Master, QA Manager/Lead/Architect, and SDET, so he covers the whole lifecycle from requirements through release."
+        },
+        {
+          id: "experience",
+          keywords: ["experience", "years", "background", "career", "how long"],
+          answer: "20+ years in enterprise software delivery, across business analysis, Agile delivery, and QA/test automation leadership."
+        },
+        {
+          id: "testing",
+          keywords: ["testing", "qa", "automation", "test strategy", "playwright", "cypress", "selenium", "quality"],
+          answer: "On the QA side: test strategy, CI/CD quality gates, and hands-on automation with Playwright, Cypress, Selenium, Cucumber/SpecFlow, TestNG, RestAssured, and Postman — plus AI-driven testing like self-healing locators and agentic QA workflows. See the <a href=\"#about\">About</a> section for the full skills list."
+        },
+        {
+          id: "ba",
+          keywords: ["business analyst", "requirements", "backlog", "product owner", "scrum master", "stakeholder", "agile"],
+          answer: "As a Business Analyst / Product Owner, Veeresh does requirements elicitation, user stories & acceptance criteria, backlog management, stakeholder management, and runs Agile/Scrum delivery in Azure DevOps."
+        },
+        {
+          id: "ai",
+          keywords: ["ai", "llm", "artificial intelligence", "machine learning", "claude", "gpt"],
+          answer: "Veeresh works with AI across both delivery and QA — AI-assisted requirements/testing, AI test generation, self-healing locators, local LLMs, and agentic workflows. Check out <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a>, his blog on AI-driven test strategy.\n\nRepos worth a look: <a href=\"https://github.com/veeresh-bikkaneti/airlock\">airlock</a> (local AI platform for Windows) and <a href=\"https://github.com/veeresh-bikkaneti/LLMcouncil\">LLMcouncil</a> (multi-agent AI in VS Code)."
+        },
+        {
+          id: "projects",
+          keywords: ["project", "repo", "repository", "github", "code", "portfolio", "work sample"],
+          answer: "A few highlights: <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a> (blog), <a href=\"https://veeresh-bikkaneti.github.io/system-design-and-architecture/\">System Design Mastery</a> (AI-tutored learning site), and <a href=\"https://github.com/veeresh-bikkaneti/cypress-playwright\">cypress-playwright</a> (a Cypress-to-Playwright migration toolkit). See the <a href=\"#sites\">Live sites</a> and <a href=\"#projects\">Selected projects</a> sections for more, or browse <a href=\"https://github.com/veeresh-bikkaneti?tab=repositories\">all repositories</a>."
+        },
+        {
+          id: "blog",
+          keywords: ["blog", "writing", "articles", "tech talk"],
+          answer: "Veeresh writes at <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a> — AI-driven test strategy, self-healing test suites, Playwright, and building quality engineering teams."
+        },
+        {
+          id: "location",
+          keywords: ["location", "where", "live", "based", "nebraska", "lincoln"],
+          answer: "Veeresh is based in Lincoln, Nebraska."
+        },
+        {
+          id: "contact",
+          keywords: ["contact", "hire", "email", "reach", "linkedin", "opportunity", "available", "opportunities"],
+          answer: "Veeresh is open to opportunities. The best way to connect is <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn</a>, or take a look at his <a href=\"https://github.com/veeresh-bikkaneti\">GitHub</a> for code."
+        },
+        {
+          id: "resume",
+          keywords: ["resume", "cv"],
+          answer: "There's no resume file linked here yet — the fastest way to get the full picture is his <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn profile</a>, or the <a href=\"#about\">About</a> section on this page."
+        }
+      ];
+
+      const GREETING = "Hi, I'm Veer 👋 — an on-page assistant that can answer quick questions about Veeresh's experience, projects, and how to reach him. I only know what's on this page, so I might miss the odd detail.";
+      const FALLBACK = "I don't have a canned answer for that yet — try asking about his experience, testing/QA work, AI projects, or how to get in touch. You can also reach Veeresh directly on <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn</a>.";
+      const SUGGESTIONS = ["What's your experience?", "Tell me about your testing work", "What AI projects have you built?", "How can I contact you?"];
+
+      let opened = false;
+
+      function addMessage(text, who) {
+        const div = document.createElement("div");
+        div.className = `veer-msg ${who}`;
+        div.innerHTML = text.replace(/\n\n/g, "<br><br>");
+        log.append(div);
+        log.scrollTop = log.scrollHeight;
+        return div;
+      }
+
+      function renderChips() {
+        chipsEl.innerHTML = "";
+        for (const s of SUGGESTIONS) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "veer-chip";
+          b.textContent = s;
+          b.addEventListener("click", () => ask(s));
+          chipsEl.append(b);
+        }
+      }
+
+      function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+      function bestMatch(query) {
+        const q = ` ${query.toLowerCase().replace(/[^a-z0-9\s]/g, " ")} `; // pad so \b-style boundaries work at the edges
+        let best = null, bestScore = 0;
+        for (const entry of KB) {
+          let score = 0;
+          for (const kw of entry.keywords) {
+            const re = new RegExp(`(?:^|\\s)${escapeRegExp(kw)}(?:$|\\s)`);
+            if (re.test(q)) score += kw.split(" ").length; // reward longer/more specific phrases
+          }
+          if (score > bestScore) { bestScore = score; best = entry; }
+        }
+        return bestScore > 0 ? best : null;
+      }
+
+      function ask(text) {
+        const trimmed = text.trim();
+        if (!trimmed) return;
+        addMessage(escapeHtml(trimmed), "user");
+        input.value = "";
+        const match = bestMatch(trimmed);
+        window.setTimeout(() => addMessage(match ? match.answer : FALLBACK, "bot"), 220);
+      }
+
+      function escapeHtml(s) {
+        const d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      function openPanel() {
+        panel.hidden = false;
+        fab.setAttribute("aria-expanded", "true");
+        if (!opened) {
+          opened = true;
+          renderChips();
+          addMessage(GREETING, "bot");
+        }
+        window.setTimeout(() => input.focus(), 50);
+      }
+
+      function closePanel() {
+        panel.hidden = true;
+        fab.setAttribute("aria-expanded", "false");
+        fab.focus();
+      }
+
+      fab.addEventListener("click", () => (panel.hidden ? openPanel() : closePanel()));
+      closeBtn.addEventListener("click", closePanel);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !panel.hidden) closePanel();
+      });
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        ask(input.value);
+      });
     })();
   </script>
 </body>
