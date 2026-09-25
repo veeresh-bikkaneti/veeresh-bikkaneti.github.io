@@ -678,6 +678,7 @@
         const total = document.querySelectorAll("#sites [data-repo]").length;
         document.getElementById("sites-count").textContent = total;
         document.getElementById("stat-sites").textContent = total;
+        window.__veerRepos = sources; // share the live repo list with Veer (see below), sorted by most recently pushed
       } catch (e) { /* offline or rate-limited: static list still works */ }
     })();
 
@@ -692,46 +693,74 @@
       const form = document.getElementById("veer-form");
       const input = document.getElementById("veer-input");
 
+      /* Knowledge base sourced from Veeresh's resume + this page. Deliberately excludes phone
+         number, personal email, and certification/license ID numbers to avoid publishing
+         scrapeable PII in client-side code — contact routes through LinkedIn/GitHub instead. */
       const KB = [
         {
           id: "role",
           keywords: ["who", "what do you do", "role", "job", "title", "does veeresh do", "about you"],
-          answer: "Veeresh is a Business Analyst, Product Owner, Certified ScrumMaster, and QA Architect with 20+ years in enterprise software delivery — he's worked as BA, PO, Scrum Master, QA Manager/Lead/Architect, and SDET, so he covers the whole lifecycle from requirements through release."
+          answer: "Veeresh is a Techno-Functional IT Leader — Business Analyst, Product Owner, Certified ScrumMaster, and QA Architect with 20+ years (career start 2008) in enterprise software delivery across property insurance, government education, healthcare, and logistics. He's worked as BA, PO, Scrum Master, QA Manager/Lead/Architect, and SDET, so he covers the whole lifecycle from requirements through release."
         },
         {
           id: "experience",
           keywords: ["experience", "years", "background", "career", "how long"],
-          answer: "20+ years in enterprise software delivery, across business analysis, Agile delivery, and QA/test automation leadership."
+          answer: "20+ years in enterprise software delivery (career start 2008), blending business strategy (BA / Product Owner) with technical execution (QA Architect / SDET Lead) across property insurance, government/education, healthcare, and logistics. Ask about his \"current role\", \"companies\" he's worked for, or specific clients like FM Global, USBE, GMR, or WERNER."
+        },
+        {
+          id: "current",
+          keywords: ["current role", "currently", "right now", "present job", "working now", "today", "current job", "these days"],
+          answer: "Since September 2024, Veeresh has been Principal QA Architect / Lead Quality Engineer on assignment with Kforce at FM Global (Factory Mutual) in Johnston, RI (remote-capable) — leading quality strategy and business analysis for underwriting and risk-engineering features on a microservices platform serving Fortune 500 clients. Highlights: drove GitHub Copilot Enterprise adoption for QA, built a custom Cypress distributed testing orchestrator, shipped AI-assisted Cypress→Playwright and Selenium→Playwright migration paths, and set up Azure DevOps dashboards for QA visibility — cutting sprint-level defect escapes by about 35%."
+        },
+        {
+          id: "clients",
+          keywords: ["companies", "clients", "worked for", "employers", "worked with", "customers", "clientele"],
+          answer: "Companies and clients Veeresh has worked with: <strong>FM Global</strong> (Factory Mutual, via Kforce — current), <strong>Utah State Board of Education</strong> (USIMS modernization, a $22.9M program) and <strong>Global Medical Response / Access2Care NEMT</strong> (both via R.U.N. Technology Consulting Services, LLC), <strong>WERNER Enterprises</strong> (top-5 North American freight carrier), and <strong>Tricentis</strong> as Transition QA Manager. Earlier in his career: Friendly IT Consultants, Anthelio Healthcare Solutions, Genpact, Deloitte, and Zavata India."
         },
         {
           id: "testing",
           keywords: ["testing", "qa", "automation", "test strategy", "playwright", "cypress", "selenium", "quality"],
-          answer: "On the QA side: test strategy, CI/CD quality gates, and hands-on automation with Playwright, Cypress, Selenium, Cucumber/SpecFlow, TestNG, RestAssured, and Postman — plus AI-driven testing like self-healing locators and agentic QA workflows. See the <a href=\"#about\">About</a> section for the full skills list."
+          answer: "On the QA side: end-to-end test strategy, CI/CD quality gates, and hands-on automation with Playwright, Cypress, Selenium, Cucumber/SpecFlow BDD, TestNG, RestAssured/RestSharp, and Postman. At FM Global he built a custom Cypress distributed testing orchestrator, shipped AI-assisted Cypress→Playwright and Selenium→Playwright migration paths, and coached shift-left testing with Application Insights and Dynatrace observability. At USBE, a Selenium C#→Playwright C#+SpecFlow migration improved performance/maintainability by about 80%. See the <a href=\"#about\">About</a> section for the full skills list."
         },
         {
           id: "ba",
           keywords: ["business analyst", "requirements", "backlog", "product owner", "scrum master", "stakeholder", "agile"],
-          answer: "As a Business Analyst / Product Owner, Veeresh does requirements elicitation, user stories & acceptance criteria, backlog management, stakeholder management, and runs Agile/Scrum delivery in Azure DevOps."
+          answer: "As a Business Analyst / Product Owner, Veeresh runs requirements elicitation and JAD sessions, writes user stories & acceptance criteria, manages backlogs and sprint priorities, leads UAT and stakeholder sign-off, and facilitates Scrum/SAFe ceremonies (PI Planning, ART, retros). At WERNER Enterprises he was dual Product Owner and QA Architect across 6+ product lines; at USBE he led statewide UAT with full FERPA traceability in Azure DevOps."
         },
         {
           id: "ai",
           keywords: ["ai", "llm", "artificial intelligence", "machine learning", "claude", "gpt"],
-          answer: "Veeresh works with AI across both delivery and QA — AI-assisted requirements/testing, AI test generation, self-healing locators, local LLMs, and agentic workflows. Check out <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a>, his blog on AI-driven test strategy.\n\nRepos worth a look: <a href=\"https://github.com/veeresh-bikkaneti/airlock\">airlock</a> (local AI platform for Windows) and <a href=\"https://github.com/veeresh-bikkaneti/LLMcouncil\">LLMcouncil</a> (multi-agent AI in VS Code)."
+          answer: "Veeresh works with AI across both delivery and QA. At FM Global he drove GitHub Copilot Enterprise adoption for test authoring, reviews, and AI-assisted framework migration. He also runs <a href=\"https://runtechcs.com\">runtechcs.com</a> — his consulting company's site, hosted on a Raspberry Pi 4 with a local small language model powering an on-site AI chatbot, built to try edge hosting and local LLM inference without cloud chat services. He writes on AI-driven test strategy at <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a> and on Medium as <em>letsautomate</em>.\n\nRepos worth a look: <a href=\"https://github.com/veeresh-bikkaneti/LLMcouncil\">LLMcouncil</a> (multi-agent LLM orchestration) and <a href=\"https://github.com/veeresh-bikkaneti/cypress-qa-ai-workforce\">cypress-qa-ai-workforce</a> (self-healing AI-assisted Cypress QA)."
         },
         {
           id: "projects",
           keywords: ["project", "repo", "repository", "github", "code", "portfolio", "work sample"],
-          answer: "A few highlights: <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a> (blog), <a href=\"https://veeresh-bikkaneti.github.io/system-design-and-architecture/\">System Design Mastery</a> (AI-tutored learning site), and <a href=\"https://github.com/veeresh-bikkaneti/cypress-playwright\">cypress-playwright</a> (a Cypress-to-Playwright migration toolkit). See the <a href=\"#sites\">Live sites</a> and <a href=\"#projects\">Selected projects</a> sections for more, or browse <a href=\"https://github.com/veeresh-bikkaneti?tab=repositories\">all repositories</a>."
+          answer: buildProjectsAnswer
         },
         {
           id: "blog",
-          keywords: ["blog", "writing", "articles", "tech talk"],
-          answer: "Veeresh writes at <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a> — AI-driven test strategy, self-healing test suites, Playwright, and building quality engineering teams."
+          keywords: ["blog", "writing", "articles", "tech talk", "medium"],
+          answer: "Veeresh writes at <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a> — AI-driven test strategy, self-healing test suites, Playwright, and building quality engineering teams — and on Medium as <em>letsautomate</em>, covering test automation strategy, Playwright, security testing, and Scrum facilitation."
+        },
+        {
+          id: "company",
+          keywords: ["run technology", "own company", "consulting company", "runtechcs", "founder", "his company", "your company"],
+          answer: "Veeresh runs <strong>R.U.N. Technology Consulting Services, LLC</strong> (Lincoln, NE) — its site, <a href=\"https://runtechcs.com\">runtechcs.com</a>, is self-hosted on a Raspberry Pi 4 with a local small language model powering an on-site AI chatbot. Through R.U.N. Technology he's delivered the Utah State Board of Education's USIMS modernization program and the Global Medical Response / Access2Care NEMT platform."
+        },
+        {
+          id: "certifications",
+          keywords: ["certification", "certifications", "certified", "credential", "credentials"],
+          answer: "Certifications: Professional Scrum Master (Scrum.org), SAFe Program Consultant (SPC), Accredited Software Test Automator (test-institute.org), Scrum Master Accredited (scrum-institute.org), Postman API Fundamentals, APIsec: API Security/Auth/Documentation, BDD with SpecFlow Masterclass (Tricentis), Six Sigma Yellow Belt, CompTIA Network+. He's also a Notary Public, State of Nebraska."
+        },
+        {
+          id: "education",
+          keywords: ["education", "degree", "university", "school", "masters", "mba", "studied"],
+          answer: "Education: M.S. Computer Science — Wilmington University, Delaware (2018); MBA — Calorx Teacher's University, Gujarat, India (2012); B.S. Computer Science — Osmania University, India (2005)."
         },
         {
           id: "location",
           keywords: ["location", "where", "live", "based", "nebraska", "lincoln"],
-          answer: "Veeresh is based in Lincoln, Nebraska."
+          answer: "Veeresh is based in Lincoln, Nebraska, and has worked remote-capable engagements (e.g. his current role with FM Global in Johnston, RI)."
         },
         {
           id: "contact",
@@ -741,15 +770,30 @@
         {
           id: "resume",
           keywords: ["resume", "cv"],
-          answer: "There's no resume file linked here yet — the fastest way to get the full picture is his <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn profile</a>, or the <a href=\"#about\">About</a> section on this page."
+          answer: "There's no resume file linked here yet — but you can ask me about his experience, current role, companies/clients, testing/QA work, certifications, or education, or check his <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn profile</a> for the full picture."
         }
       ];
 
       const GREETING = "Hi, I'm Veer 👋 — an on-page assistant that can answer quick questions about Veeresh's experience, projects, and how to reach him. I only know what's on this page, so I might miss the odd detail.";
-      const FALLBACK = "I don't have a canned answer for that yet — try asking about his experience, testing/QA work, AI projects, or how to get in touch. You can also reach Veeresh directly on <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn</a>.";
-      const SUGGESTIONS = ["What's your experience?", "Tell me about your testing work", "What AI projects have you built?", "How can I contact you?"];
+      const FALLBACK = "I don't have a canned answer for that yet — try asking about his experience, current role, companies/clients, testing/QA work, AI projects, certifications, or how to get in touch. You can also reach Veeresh directly on <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn</a>.";
+      const SUGGESTIONS = ["What's your current role?", "What companies have you worked for?", "Tell me about your testing work", "What certifications do you have?"];
 
       let opened = false;
+
+      /* Builds the "projects" answer from the live GitHub repo list (window.__veerRepos,
+         populated by the auto-discover script above) when it's available, falling back to a
+         static hand-picked list otherwise (offline, rate-limited, or not yet fetched). */
+      function buildProjectsAnswer() {
+        const highlights = "Highlights: <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a> (blog), <a href=\"https://veeresh-bikkaneti.github.io/system-design-and-architecture/\">System Design Mastery</a> (AI-tutored learning site), <a href=\"https://github.com/veeresh-bikkaneti/cypress-playwright\">cypress-playwright</a> (Cypress→Playwright migration toolkit), <a href=\"https://github.com/veeresh-bikkaneti/cypress-qa-ai-workforce\">cypress-qa-ai-workforce</a> (self-healing Cypress QA system), <a href=\"https://github.com/veeresh-bikkaneti/LLMcouncil\">LLMcouncil</a> (multi-agent LLM orchestration), and <a href=\"https://github.com/veeresh-bikkaneti/azdo-ai-toolkit\">azdo-ai-toolkit</a> (Azure DevOps test-case generation).";
+        const repos = window.__veerRepos;
+        if (!repos || !repos.length) {
+          return `${highlights} See the <a href="#sites">Live sites</a> and <a href="#projects">Selected projects</a> sections, or browse <a href="https://github.com/veeresh-bikkaneti?tab=repositories">all repositories</a>.`;
+        }
+        const top = repos.slice(0, 6)
+          .map(r => `<a href="${r.html_url}">${escapeHtml(r.name)}</a>${r.description ? ` — ${escapeHtml(r.description)}` : ""}`)
+          .join("<br>");
+        return `${highlights}\n\nMost recently updated public repos:<br>${top}\n\nBrowse <a href="https://github.com/veeresh-bikkaneti?tab=repositories">all ${repos.length} repositories</a>.`;
+      }
 
       function addMessage(text, who) {
         const div = document.createElement("div");
@@ -780,7 +824,7 @@
         for (const entry of KB) {
           let score = 0;
           for (const kw of entry.keywords) {
-            const re = new RegExp(`(?:^|\\s)${escapeRegExp(kw)}(?:$|\\s)`);
+            const re = new RegExp(`(?:^|\\s)${escapeRegExp(kw)}s?(?:$|\\s)`); // trailing s? so "project" also matches "projects"
             if (re.test(q)) score += kw.split(" ").length; // reward longer/more specific phrases
           }
           if (score > bestScore) { bestScore = score; best = entry; }
@@ -794,7 +838,8 @@
         addMessage(escapeHtml(trimmed), "user");
         input.value = "";
         const match = bestMatch(trimmed);
-        window.setTimeout(() => addMessage(match ? match.answer : FALLBACK, "bot"), 220);
+        const raw = match ? match.answer : FALLBACK;
+        window.setTimeout(() => addMessage(typeof raw === "function" ? raw() : raw, "bot"), 220);
       }
 
       function escapeHtml(s) {
