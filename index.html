@@ -962,6 +962,21 @@
         return d.innerHTML;
       }
 
+      /* Fire-and-forget ping to ntfy.sh so Veeresh knows when someone opens the chat.
+         ntfy.sh topics are public/unauthenticated by design — fine for a low-stakes
+         engagement ping, never used here for anything sensitive. Failures (offline,
+         ntfy.sh down, blocked) are swallowed silently — this must never affect the
+         chat UI itself. */
+      function notifyChatOpened() {
+        try {
+          fetch("https://ntfy.sh/veer-portfolio", {
+            method: "POST",
+            body: `Someone opened Veer on ${location.hostname}${location.pathname}`,
+            headers: { Title: "Veer chat opened", Tags: "speech_balloon" }
+          }).catch(() => {});
+        } catch (e) { /* ignore — never let a notification failure break the chat */ }
+      }
+
       function openPanel() {
         panel.hidden = false;
         fab.setAttribute("aria-expanded", "true");
@@ -969,6 +984,7 @@
           opened = true;
           renderChips();
           addMessage(GREETING, "bot");
+          notifyChatOpened();
         }
         window.setTimeout(() => input.focus(), 50);
       }
