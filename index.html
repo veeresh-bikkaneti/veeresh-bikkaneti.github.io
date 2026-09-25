@@ -893,6 +893,28 @@
         return best;
       }
 
+      /* Broader repo search than findRepoMatch: matches query terms against name,
+         description, and language (not just an exact name substring), so topic
+         questions like "selenium java projects" or "contributions to selenium"
+         surface the actually-relevant repos instead of only a generic KB answer. */
+      function searchRepos(query) {
+        const repos = window.__veerRepos;
+        if (!repos || !repos.length) return [];
+        const terms = query.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/)
+          .filter(t => t.length > 1 && !STOPWORDS.has(t));
+        if (!terms.length) return [];
+        return repos
+          .map(r => {
+            const hay = `${r.name} ${r.description || ""} ${r.language || ""}`.toLowerCase();
+            const score = terms.reduce((n, t) => n + (hay.includes(t) ? 1 : 0), 0);
+            return { r, score };
+          })
+          .filter(x => x.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3)
+          .map(x => x.r);
+      }
+
       function addMessage(text, who) {
         const div = document.createElement("div");
         div.className = `veer-msg ${who}`;
@@ -923,7 +945,10 @@
           let score = 0;
           for (const kw of entry.keywords) {
             const re = new RegExp(`(?:^|\\s)${escapeRegExp(kw)}s?(?:$|\\s)`); // trailing s? so "project" also matches "projects"
-            if (re.test(q)) score += kw.split(" ").length; // reward longer/more specific phrases
+            // Weight by word count first (multi-word phrases are more specific), then by
+            // character length as a tie-breaker so e.g. "contributions" outranks "selenium"
+            // when both match the same query — the more specific word should win.
+            if (re.test(q)) score += kw.split(" ").length * 100 + kw.length;
           }
           if (score > bestScore) { bestScore = score; best = entry; }
         }
@@ -935,10 +960,12 @@
         if (!trimmed) return;
         addMessage(escapeHtml(trimmed), "user");
         input.value = "";
+        chipsEl.innerHTML = ""; // suggestions are a first-open hint only — clear them once a conversation starts so they stop crowding the panel
         const repoMatch = findRepoMatch(trimmed);
         const match = bestMatch(trimmed);
         const raw = match ? match.answer : null;
         const posts = searchPosts(trimmed);
+        const repos = searchRepos(trimmed).filter(r => !repoMatch || r.name !== repoMatch.name);
         window.setTimeout(() => {
           let out = "";
           if (repoMatch) {
@@ -947,6 +974,10 @@
               (repoMatch.language ? ` (${escapeHtml(repoMatch.language)})` : "");
           } else if (raw) {
             out = typeof raw === "function" ? raw() : raw;
+          }
+          if (repos.length) {
+            const list = repos.map(r => `<a href="${r.html_url}">${escapeHtml(r.name)}</a>${r.description ? ` — ${escapeHtml(r.description)}` : ""}`).join("<br>");
+            out += (out ? "\n\n" : "") + `Relevant repos:<br>${list}`;
           }
           if (posts.length) {
             const list = posts.map(p => `<a href="${p.link}">${escapeHtml(p.title)}</a>`).join("<br>");
