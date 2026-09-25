@@ -682,6 +682,45 @@
       } catch (e) { /* offline or rate-limited: static list still works */ }
     })();
 
+    /* ---- Fetch the blog's Atom feed so Veer can search across all posts, not just the
+       hand-picked highlights. Same-origin (blog is served from this same GitHub Pages
+       account, just a different path), so no CORS issue and no API key needed. ---- */
+    (async () => {
+      try {
+        const res = await fetch("https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/feed.xml");
+        if (!res.ok) return;
+        const xml = new DOMParser().parseFromString(await res.text(), "application/xml");
+        if (xml.querySelector("parsererror")) return;
+        window.__veerPosts = [...xml.querySelectorAll("entry")].map(e => ({
+          title: e.querySelector("title")?.textContent?.trim() || "",
+          link: e.querySelector("link")?.getAttribute("href") || "",
+          excerpt: e.querySelector("summary")?.textContent?.trim() || "",
+          categories: [...e.querySelectorAll("category")].map(c => c.getAttribute("term")).filter(Boolean),
+          published: e.querySelector("published")?.textContent || ""
+        })).filter(p => p.title && p.link);
+      } catch (e) { /* offline or blocked: Veer's blog search just returns no results */ }
+    })();
+
+    /* ---- Fetch Veeresh's recent GitHub pull request activity (his own repos and
+       contributions to others') via the public search API — same CORS-friendly,
+       unauthenticated API already used for the repo list above. ---- */
+    (async () => {
+      const USER = "veeresh-bikkaneti";
+      try {
+        const res = await fetch(`https://api.github.com/search/issues?q=author:${USER}+type:pr&per_page=15&sort=updated&order=desc`, { headers: { Accept: "application/vnd.github+json" } });
+        if (!res.ok) return;
+        const data = await res.json();
+        window.__veerContributions = (data.items || []).map(i => ({
+          title: i.title,
+          url: i.html_url,
+          repo: (i.repository_url || "").split("/").slice(-2).join("/"),
+          merged: !!(i.pull_request && i.pull_request.merged_at),
+          state: i.state,
+          updated: i.updated_at
+        }));
+      } catch (e) { /* offline or rate-limited: Veer's contributions answer falls back to GitHub link */ }
+    })();
+
     /* ---- Veer: rule-based Q&A over a small on-page knowledge base. Runs entirely
        client-side — no API key, no backend, works unchanged on GitHub Pages. ---- */
     (() => {
@@ -740,7 +779,12 @@
         {
           id: "blog",
           keywords: ["blog", "writing", "articles", "tech talk", "medium"],
-          answer: "Veeresh writes at <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a> — AI-driven test strategy, self-healing test suites, Playwright, and building quality engineering teams — and on Medium as <em>letsautomate</em>, covering test automation strategy, Playwright, security testing, and Scrum facilitation."
+          answer: "Veeresh writes at <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a> — 35+ posts on AI-driven test strategy, Playwright, Selenium, XPath, BDD, GraphQL, self-healing test suites, and building quality engineering teams — plus Medium as <em>letsautomate</em>. Ask me about a specific topic (e.g. \"Playwright\" or \"self-healing tests\") and I'll pull up the relevant posts."
+        },
+        {
+          id: "contributions",
+          keywords: ["contribution", "contributions", "open source", "pull request", "pull requests", "pr"],
+          answer: buildContributionsAnswer
         },
         {
           id: "company",
@@ -775,8 +819,8 @@
       ];
 
       const GREETING = "Hi, I'm Veer 👋 — an on-page assistant that can answer quick questions about Veeresh's experience, projects, and how to reach him. I only know what's on this page, so I might miss the odd detail.";
-      const FALLBACK = "I don't have a canned answer for that yet — try asking about his experience, current role, companies/clients, testing/QA work, AI projects, certifications, or how to get in touch. You can also reach Veeresh directly on <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn</a>.";
-      const SUGGESTIONS = ["What's your current role?", "What companies have you worked for?", "Tell me about your testing work", "What certifications do you have?"];
+      const FALLBACK = "I don't have a canned answer for that yet — try asking about his experience, current role, companies/clients, testing/QA work, AI projects, certifications, blog posts on a specific topic (e.g. \"Playwright\" or \"XPath\"), or open-source contributions. You can also reach Veeresh directly on <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn</a>.";
+      const SUGGESTIONS = ["What's your current role?", "Any blog posts on Playwright?", "Tell me about your testing work", "What certifications do you have?"];
 
       let opened = false;
 
@@ -793,6 +837,40 @@
           .map(r => `<a href="${r.html_url}">${escapeHtml(r.name)}</a>${r.description ? ` — ${escapeHtml(r.description)}` : ""}`)
           .join("<br>");
         return `${highlights}\n\nMost recently updated public repos:<br>${top}\n\nBrowse <a href="https://github.com/veeresh-bikkaneti?tab=repositories">all ${repos.length} repositories</a>.`;
+      }
+
+      /* Builds the "contributions" answer from live GitHub PR search results
+         (window.__veerContributions, populated above), falling back to a plain link. */
+      function buildContributionsAnswer() {
+        const prs = window.__veerContributions;
+        const fallback = `Browse Veeresh's pull request activity directly on <a href="https://github.com/veeresh-bikkaneti">GitHub</a>.`;
+        if (!prs || !prs.length) return fallback;
+        const top = prs.slice(0, 5)
+          .map(p => `<a href="${p.url}">${escapeHtml(p.title)}</a> — ${escapeHtml(p.repo)}${p.merged ? " (merged)" : p.state === "open" ? " (open)" : ""}`)
+          .join("<br>");
+        return `Recent pull request activity:<br>${top}\n\nBrowse the full history on <a href="https://github.com/veeresh-bikkaneti">GitHub</a>.`;
+      }
+
+      /* Searches the live blog post index (window.__veerPosts, populated above) by
+         simple keyword overlap against title/categories/excerpt. Returns up to 3 matches,
+         best first. Used to append relevant posts to whatever KB answer is chosen. */
+      const STOPWORDS = new Set(["the","and","for","you","your","have","what","how","tell","about","with","are","does","did","do","is","it","on","at","as","or","an","be","we","my","of","to","in","a","i","me","can","get","got","who","why","when","where","this","that","any","has","his","her"]);
+      function searchPosts(query) {
+        const posts = window.__veerPosts;
+        if (!posts || !posts.length) return [];
+        const terms = query.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/)
+          .filter(t => t.length > 1 && !STOPWORDS.has(t));
+        if (!terms.length) return [];
+        return posts
+          .map(p => {
+            const hay = `${p.title} ${p.categories.join(" ")} ${p.excerpt}`.toLowerCase();
+            const score = terms.reduce((n, t) => n + (hay.includes(t) ? 1 : 0), 0);
+            return { p, score };
+          })
+          .filter(x => x.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3)
+          .map(x => x.p);
       }
 
       function addMessage(text, who) {
@@ -838,8 +916,16 @@
         addMessage(escapeHtml(trimmed), "user");
         input.value = "";
         const match = bestMatch(trimmed);
-        const raw = match ? match.answer : FALLBACK;
-        window.setTimeout(() => addMessage(typeof raw === "function" ? raw() : raw, "bot"), 220);
+        const raw = match ? match.answer : null;
+        const posts = searchPosts(trimmed);
+        window.setTimeout(() => {
+          let out = raw ? (typeof raw === "function" ? raw() : raw) : "";
+          if (posts.length) {
+            const list = posts.map(p => `<a href="${p.link}">${escapeHtml(p.title)}</a>`).join("<br>");
+            out += (out ? "\n\n" : "") + `From the blog:<br>${list}`;
+          }
+          addMessage(out || FALLBACK, "bot");
+        }, 220);
       }
 
       function escapeHtml(s) {
