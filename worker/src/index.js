@@ -29,12 +29,16 @@
 const ALLOWED_ORIGIN = "https://veeresh-bikkaneti.github.io";
 
 function corsHeaders(origin) {
-  return {
-    "Access-Control-Allow-Origin": origin === ALLOWED_ORIGIN ? origin : "null",
+  const headers = {
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Vary": "Origin"
   };
+  // Only ever set this for the one allowed origin. Echoing the literal string "null"
+  // for everyone else would also match a request whose real Origin header is "null"
+  // (e.g. from a sandboxed iframe) — omitting the header entirely avoids that.
+  if (origin === ALLOWED_ORIGIN) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
 }
 
 function json(body, status, origin) {
