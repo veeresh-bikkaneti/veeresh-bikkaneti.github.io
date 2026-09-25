@@ -305,7 +305,7 @@
     .veer-avatar {
       display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: 50%; flex: none;
       background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent);
-      font: 800 .8rem/1 var(--font);
+      font: 800 .8rem/1 var(--font); object-fit: cover; /* covers the case this is an <img>: gradient shows while it loads or if it 404s */
     }
     .veer-head-text { flex: 1; min-width: 0; }
     .veer-head-text strong { display: block; font-size: .95rem; color: var(--text); }
@@ -587,7 +587,7 @@
 
   <section class="veer-panel" id="veer-panel" role="dialog" aria-modal="false" aria-labelledby="veer-title" hidden>
     <div class="veer-head">
-      <span class="veer-avatar" aria-hidden="true">V</span>
+      <img class="veer-avatar" src="https://avatars.githubusercontent.com/u/57240576?v=4&s=80" alt="" width="34" height="34" aria-hidden="true">
       <div class="veer-head-text">
         <strong id="veer-title">Veer</strong>
         <span>Ask about Veeresh's work</span>
@@ -738,18 +738,20 @@
       const KB = [
         {
           id: "role",
+          generic: true, // meta-words like "role"/"job" shouldn't outrank a specific technical match (e.g. "playwright") elsewhere — see bestMatch()
           keywords: ["who", "what do you do", "role", "job", "title", "does veeresh do", "about you"],
           answer: "Veeresh is a Techno-Functional IT Leader — Business Analyst, Product Owner, Certified ScrumMaster, and QA Architect with 20+ years (career start 2008) in enterprise software delivery across property insurance, government education, healthcare, and logistics. He's worked as BA, PO, Scrum Master, QA Manager/Lead/Architect, and SDET, so he covers the whole lifecycle from requirements through release."
         },
         {
           id: "experience",
+          generic: true,
           keywords: ["experience", "years", "background", "career", "how long"],
           answer: "20+ years in enterprise software delivery (career start 2008), blending business strategy (BA / Product Owner) with technical execution (QA Architect / SDET Lead) across property insurance, government/education, healthcare, and logistics. Ask about his \"current role\", \"companies\" he's worked for, or specific clients like FM Global, USBE, GMR, or WERNER."
         },
         {
           id: "current",
           keywords: ["current role", "currently", "right now", "present job", "working now", "today", "current job", "these days"],
-          answer: "Since September 2024, Veeresh has been Principal QA Architect / Lead Quality Engineer on assignment with Kforce at FM Global (Factory Mutual) in Johnston, RI (remote-capable) — leading quality strategy and business analysis for underwriting and risk-engineering features on a microservices platform serving Fortune 500 clients. Highlights: drove GitHub Copilot Enterprise adoption for QA, built a custom Cypress distributed testing orchestrator, shipped AI-assisted Cypress→Playwright and Selenium→Playwright migration paths, and set up Azure DevOps dashboards for QA visibility — cutting sprint-level defect escapes by about 35%."
+          answer: "Right now, Veeresh is Principal QA Architect / Lead Quality Engineer on assignment with Kforce at FM Global (Factory Mutual) in Johnston, RI — remote-capable, in the role since September 2024. He leads quality strategy and business analysis for underwriting and risk-engineering features on a microservices platform serving Fortune 500 clients. A few things he's driven there: GitHub Copilot Enterprise adoption for QA, a custom Cypress distributed testing orchestrator, AI-assisted Cypress→Playwright and Selenium→Playwright migration paths, and Azure DevOps dashboards for QA visibility — work he credits with cutting sprint-level defect escapes by about 35%. <em>(Per his most recent resume — worth confirming directly if the timing matters to you.)</em>"
         },
         {
           id: "clients",
@@ -759,7 +761,7 @@
         {
           id: "testing",
           keywords: ["testing", "qa", "automation", "test strategy", "playwright", "cypress", "selenium", "quality"],
-          answer: "On the QA side: end-to-end test strategy, CI/CD quality gates, and hands-on automation with Playwright, Cypress, Selenium, Cucumber/SpecFlow BDD, TestNG, RestAssured/RestSharp, and Postman. At FM Global he built a custom Cypress distributed testing orchestrator, shipped AI-assisted Cypress→Playwright and Selenium→Playwright migration paths, and coached shift-left testing with Application Insights and Dynatrace observability. At USBE, a Selenium C#→Playwright C#+SpecFlow migration improved performance/maintainability by about 80%. See the <a href=\"#about\">About</a> section for the full skills list."
+          answer: "Testing is really his core strength: end-to-end test strategy, CI/CD quality gates, and hands-on automation across Playwright, Cypress, Selenium, Cucumber/SpecFlow BDD, TestNG, RestAssured/RestSharp, and Postman. His Playwright work in particular spans a custom Cypress distributed testing orchestrator he built at FM Global, an AI-assisted Cypress→Playwright and Selenium→Playwright migration path he shipped there, and a Selenium C#→Playwright C#+SpecFlow migration at USBE that improved performance and maintainability by about 80%. He's also coached shift-left testing practices backed by Application Insights and Dynatrace observability. <em>(Summarized from his resume — see the <a href=\"#about\">About</a> section for the fuller skills list, or ask me for specific Playwright repos and blog posts.)</em>"
         },
         {
           id: "ba",
@@ -818,7 +820,7 @@
         }
       ];
 
-      const GREETING = "Hi, I'm Veer 👋 — an on-page assistant that can answer quick questions about Veeresh's experience, projects, and how to reach him. I only know what's on this page, so I might miss the odd detail.";
+      const GREETING = "Hi, I'm Veer 👋 — I can answer questions about Veeresh's experience, current role, and projects. My answers are drawn from his resume, his live GitHub repos, and his blog, and I'll flag the source where it matters. I don't have general web access, so for anything outside that, his <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn</a> is the more current source.";
       const FALLBACK = "I don't have a canned answer for that yet — try asking about his experience, current role, companies/clients, testing/QA work, AI projects, certifications, blog posts on a specific topic (e.g. \"Playwright\" or \"XPath\"), or open-source contributions. You can also reach Veeresh directly on <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn</a>.";
       const SUGGESTIONS = ["What's your current role?", "Any blog posts on Playwright?", "Tell me about your testing work", "What certifications do you have?"];
 
@@ -968,12 +970,15 @@
         let best = null, bestScore = 0;
         for (const entry of KB) {
           let score = 0;
+          // Generic entries (role/experience) use broad meta-words ("experience", "role",
+          // "job") that show up as a suffix in lots of specific questions too (e.g. "your
+          // Playwright experience"). Score them low so any specific technical keyword match
+          // elsewhere always wins outright, rather than risking a coincidental tie decided
+          // by array order (e.g. "experience" and "playwright" are both 10 characters).
+          const weight = entry.generic ? 1 : 100;
           for (const kw of entry.keywords) {
             const re = new RegExp(`(?:^|\\s)${escapeRegExp(kw)}s?(?:$|\\s)`); // trailing s? so "project" also matches "projects"
-            // Weight by word count first (multi-word phrases are more specific), then by
-            // character length as a tie-breaker so e.g. "contributions" outranks "selenium"
-            // when both match the same query — the more specific word should win.
-            if (re.test(q)) score += kw.split(" ").length * 100 + kw.length;
+            if (re.test(q)) score += kw.split(" ").length * weight + kw.length;
           }
           if (score > bestScore) { bestScore = score; best = entry; }
         }
@@ -1002,7 +1007,7 @@
           }
           if (repos.length) {
             const list = repos.map(r => `<a href="${r.html_url}">${escapeHtml(r.name)}</a>${r.description ? ` — ${escapeHtml(r.description)}` : ""}`).join("<br>");
-            out += (out ? "\n\n" : "") + `Relevant repos:<br>${list}`;
+            out += (out ? "\n\n" : "") + `Related work on GitHub:<br>${list}`;
           }
           if (posts.length) {
             const list = posts.map(p => `<a href="${p.link}">${escapeHtml(p.title)}</a>`).join("<br>");
