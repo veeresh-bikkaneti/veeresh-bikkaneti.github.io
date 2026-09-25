@@ -293,7 +293,7 @@
     .veer-panel {
       position: fixed; right: 1.25rem; bottom: calc(1.25rem + 4rem); z-index: 81;
       width: min(23rem, calc(100vw - 2.5rem)); max-height: min(32rem, calc(100vh - 8rem));
-      display: flex; flex-direction: column; overflow: hidden;
+      display: flex; flex-direction: column; overflow: hidden; padding: 0; /* override the generic `section { padding-block }` rule below — this section is a floating card, not a page section */
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
       box-shadow: var(--shadow);
     }
