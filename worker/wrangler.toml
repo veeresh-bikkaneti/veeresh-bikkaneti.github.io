@@ -1,6 +1,0 @@
-name = "veer-search-proxy"
-main = "src/index.js"
-compatibility_date = "2026-01-01"
-
-# No KV/D1/R2 bindings needed — this Worker is stateless, just a search relay.
-# The Brave Search API key is set as a secret (never committed), see README.md.
