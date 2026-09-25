@@ -945,7 +945,19 @@
       function addMessage(text, who) {
         const div = document.createElement("div");
         div.className = `veer-msg ${who}`;
-        div.innerHTML = text.replace(/\n\n/g, "<br><br>");
+        let html = text.replace(/\n\n/g, "<br><br>");
+        if (who === "bot") {
+          // Every link Veer suggests opens in a new tab, so the chat itself never
+          // navigates away — the visitor can keep the conversation going in this tab
+          // while the linked page loads in the background. noopener/noreferrer since
+          // these are user-facing links, not app navigation, and several point off-site.
+          const hasLink = /<a\s+href=/.test(html);
+          html = html.replace(/<a\s+href="([^"]*)"/g, '<a href="$1" target="_blank" rel="noopener noreferrer"');
+          if (hasLink) {
+            html += `<br><br><em>(Opens in a new tab — check that tab when you're ready, this chat stays right here.)</em>`;
+          }
+        }
+        div.innerHTML = html;
         log.append(div);
         log.scrollTop = log.scrollHeight;
         return div;
