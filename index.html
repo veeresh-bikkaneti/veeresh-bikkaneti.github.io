@@ -854,7 +854,7 @@
       /* Searches the live blog post index (window.__veerPosts, populated above) by
          simple keyword overlap against title/categories/excerpt. Returns up to 3 matches,
          best first. Used to append relevant posts to whatever KB answer is chosen. */
-      const STOPWORDS = new Set(["the","and","for","you","your","have","what","how","tell","about","with","are","does","did","do","is","it","on","at","as","or","an","be","we","my","of","to","in","a","i","me","can","get","got","who","why","when","where","this","that","any","has","his","her"]);
+      const STOPWORDS = new Set(["the","and","for","you","your","have","what","how","tell","about","with","are","does","did","do","is","it","on","at","as","or","an","be","we","my","of","to","in","a","i","me","can","get","got","who","why","when","where","this","that","any","has","his","her","more","some","know","him","them","us","if","so","not"]);
       function searchPosts(query) {
         const posts = window.__veerPosts;
         if (!posts || !posts.length) return [];
@@ -873,14 +873,39 @@
           .map(x => x.p);
       }
 
+      /* Small fixed fallback so repo questions work even before the live GitHub fetch
+         resolves (or if it's blocked/rate-limited) — sourced from the same descriptions
+         already hand-written in the "Selected projects" section above. Without this,
+         asking about a specific project in the first second or two after opening the
+         chat (or on a flaky connection) silently falls through to the FALLBACK message,
+         since window.__veerRepos is still empty at that point. */
+      const STATIC_REPOS = [
+        { name: "airlock", html_url: "https://github.com/veeresh-bikkaneti/airlock", description: "Hardened, single-instance local AI platform for Windows — Ollama/vLLM backend chooser, firewall-guarded, audit-logged, with policy-gated cloud fallback.", language: "PowerShell" },
+        { name: "cypress-playwright", html_url: "https://github.com/veeresh-bikkaneti/cypress-playwright", description: "Cypress-to-Playwright migration toolkit: portable AGENTS.md and agent skills for Copilot, Claude Code, Cursor, and more, plus a dual-framework demo suite.", language: "TypeScript" },
+        { name: "azdo-ai-toolkit", html_url: "https://github.com/veeresh-bikkaneti/azdo-ai-toolkit", description: "AI-assisted toolkit for Azure DevOps workflows.", language: "TypeScript" },
+        { name: "LLMcouncil", html_url: "https://github.com/veeresh-bikkaneti/LLMcouncil", description: "VS Code extension that brings multi-agent AI analysis — a council of LLMs — into your editor.", language: "TypeScript" },
+        { name: "cypress-qa-ai-workforce", html_url: "https://github.com/veeresh-bikkaneti/cypress-qa-ai-workforce", description: "Drop-in Copilot instructions, agent rules, and reusable prompts that turn a Cypress project into an AI-assisted QA workspace.", language: "JavaScript" },
+        { name: "cucumberBDDParallel", html_url: "https://github.com/veeresh-bikkaneti/cucumberBDDParallel", description: "Cucumber-JVM BDD framework running features in parallel with TestNG and Cluecumber reports.", language: "Java" },
+        { name: "SeleniumTestNGParallelExtentReports", html_url: "https://github.com/veeresh-bikkaneti/SeleniumTestNGParallelExtentReports", description: "Parallel Selenium execution with TestNG and Extent Reports for readable test results.", language: "Java" },
+        { name: "SpecFlowDataTable", html_url: "https://github.com/veeresh-bikkaneti/SpecFlowDataTable", description: "Working with Gherkin data tables in SpecFlow step definitions (C# / .NET BDD).", language: "C#" }
+      ];
+
+      /* Live repos (once fetched) plus any static-fallback repos not already present
+         among them — live data wins on name collisions since it's fresher. */
+      function getRepoPool() {
+        const live = window.__veerRepos || [];
+        const liveNames = new Set(live.map(r => r.name.toLowerCase()));
+        return live.concat(STATIC_REPOS.filter(r => !liveNames.has(r.name.toLowerCase())));
+      }
+
       /* Matches a query against a specific repo name (e.g. "what does LLM council do"
          → the LLMcouncil repo), ignoring spaces/punctuation/case so "LLM council",
          "llmcouncil", and "LLMcouncil" all match. Takes priority over generic KB
          answers so asking about a named project gets that project's own description
          instead of a broader topic answer (e.g. the general "ai" blurb). */
       function findRepoMatch(query) {
-        const repos = window.__veerRepos;
-        if (!repos || !repos.length) return null;
+        const repos = getRepoPool();
+        if (!repos.length) return null;
         const qCompact = query.toLowerCase().replace(/[^a-z0-9]/g, "");
         let best = null, bestLen = 0;
         for (const r of repos) {
@@ -898,8 +923,8 @@
          questions like "selenium java projects" or "contributions to selenium"
          surface the actually-relevant repos instead of only a generic KB answer. */
       function searchRepos(query) {
-        const repos = window.__veerRepos;
-        if (!repos || !repos.length) return [];
+        const repos = getRepoPool();
+        if (!repos.length) return [];
         const terms = query.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/)
           .filter(t => t.length > 1 && !STOPWORDS.has(t));
         if (!terms.length) return [];
