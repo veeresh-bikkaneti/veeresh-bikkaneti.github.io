@@ -873,6 +873,26 @@
           .map(x => x.p);
       }
 
+      /* Matches a query against a specific repo name (e.g. "what does LLM council do"
+         → the LLMcouncil repo), ignoring spaces/punctuation/case so "LLM council",
+         "llmcouncil", and "LLMcouncil" all match. Takes priority over generic KB
+         answers so asking about a named project gets that project's own description
+         instead of a broader topic answer (e.g. the general "ai" blurb). */
+      function findRepoMatch(query) {
+        const repos = window.__veerRepos;
+        if (!repos || !repos.length) return null;
+        const qCompact = query.toLowerCase().replace(/[^a-z0-9]/g, "");
+        let best = null, bestLen = 0;
+        for (const r of repos) {
+          const nameCompact = r.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+          if (nameCompact.length > 3 && qCompact.includes(nameCompact) && nameCompact.length > bestLen) {
+            best = r;
+            bestLen = nameCompact.length;
+          }
+        }
+        return best;
+      }
+
       function addMessage(text, who) {
         const div = document.createElement("div");
         div.className = `veer-msg ${who}`;
@@ -915,11 +935,19 @@
         if (!trimmed) return;
         addMessage(escapeHtml(trimmed), "user");
         input.value = "";
+        const repoMatch = findRepoMatch(trimmed);
         const match = bestMatch(trimmed);
         const raw = match ? match.answer : null;
         const posts = searchPosts(trimmed);
         window.setTimeout(() => {
-          let out = raw ? (typeof raw === "function" ? raw() : raw) : "";
+          let out = "";
+          if (repoMatch) {
+            out = `<a href="${repoMatch.html_url}">${escapeHtml(repoMatch.name)}</a>` +
+              (repoMatch.description ? ` — ${escapeHtml(repoMatch.description)}` : " — no description yet on GitHub.") +
+              (repoMatch.language ? ` (${escapeHtml(repoMatch.language)})` : "");
+          } else if (raw) {
+            out = typeof raw === "function" ? raw() : raw;
+          }
           if (posts.length) {
             const list = posts.map(p => `<a href="${p.link}">${escapeHtml(p.title)}</a>`).join("<br>");
             out += (out ? "\n\n" : "") + `From the blog:<br>${list}`;
