@@ -732,6 +732,57 @@
       const form = document.getElementById("veer-form");
       const input = document.getElementById("veer-input");
 
+      /* ---- Optional last-resort web grounding (experimental, Chrome-only, opt-in) ----
+         Empty by default, which fully disables this: Veer behaves exactly as it did
+         before, for every visitor, on every browser. To enable, deploy the tiny Cloudflare
+         Worker proxy in worker/ (see worker/README.md — it holds a Brave Search API key
+         server-side, since a key embedded here would be public) and paste its URL below.
+
+         Even configured, this only ever runs when every other path — repo match, KB
+         match, blog search, repo search — comes back empty, i.e. only on questions Veer
+         genuinely can't answer today. It requires Chrome's built-in on-device AI
+         (window.LanguageModel with tool calling) to be available in the visitor's browser;
+         anywhere else (Firefox, Safari, Chrome without it enabled) it silently falls
+         through to the same FALLBACK message as always. No answer this produces is ever
+         about Veeresh specifically — it's general web grounding for everything else. */
+      const SEARCH_PROXY_URL = ""; // e.g. "https://veer-search-proxy.<you>.workers.dev" — see worker/README.md
+
+      async function tryWebGroundedAnswer(query) {
+        if (!SEARCH_PROXY_URL || !("LanguageModel" in self)) return null;
+        // Caps the whole attempt (including a possible on-device model download) so an
+        // unresolved/slow LanguageModel call never leaves the visitor staring at a chat
+        // that looks broken — past this, we just fall through to FALLBACK as normal.
+        const signal = AbortSignal.timeout(8000);
+        let session = null;
+        try {
+          const availability = await LanguageModel.availability();
+          if (availability === "unavailable") return null;
+          session = await LanguageModel.create({
+            signal,
+            tools: [{
+              name: "searchWeb",
+              description: "Search the live web for current information not in your training data.",
+              inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] },
+              execute: async ({ query: q }) => {
+                const res = await fetch(`${SEARCH_PROXY_URL}?q=${encodeURIComponent(q)}`);
+                if (!res.ok) return "Search unavailable right now.";
+                const data = await res.json();
+                return JSON.stringify((data.results || []).map(r => ({ title: r.title, url: r.url, snippet: r.description })));
+              }
+            }]
+          });
+          const reply = await session.prompt(
+            `You are "Veer", the chat assistant on Veeresh Bikkaneti's portfolio site. A visitor asked something outside what's in your normal knowledge base: "${query}". Use the searchWeb tool if it would help. Answer in 2-3 sentences, plainly, and only state something as fact if the search results actually support it.`,
+            { signal }
+          );
+          return (reply || "").trim() || null;
+        } catch (e) {
+          return null; // model unavailable, download not ready, tool-calling unsupported, timed out, etc. — fail silent, never block the chat
+        } finally {
+          session?.destroy?.();
+        }
+      }
+
       /* Knowledge base sourced from Veeresh's resume + this page. Deliberately excludes phone
          number, personal email, and certification/license ID numbers to avoid publishing
          scrapeable PII in client-side code — contact routes through LinkedIn/GitHub instead. */
@@ -1008,7 +1059,7 @@
         const raw = match ? match.answer : null;
         const posts = searchPosts(trimmed);
         const repos = searchRepos(trimmed).filter(r => !repoMatch || r.name !== repoMatch.name);
-        window.setTimeout(() => {
+        window.setTimeout(async () => {
           let out = "";
           if (repoMatch) {
             out = `<a href="${repoMatch.html_url}">${escapeHtml(repoMatch.name)}</a>` +
@@ -1025,7 +1076,21 @@
             const list = posts.map(p => `<a href="${p.link}">${escapeHtml(p.title)}</a>`).join("<br>");
             out += (out ? "\n\n" : "") + `From the blog:<br>${list}`;
           }
-          addMessage(out || FALLBACK, "bot");
+          if (!out) {
+            // True last resort: nothing in the resume/repo/blog knowledge base matched
+            // at all. Try web grounding (no-op unless configured + Chrome on-device AI
+            // is available — see tryWebGroundedAnswer above); otherwise show FALLBACK.
+            const webAnswer = await tryWebGroundedAnswer(trimmed);
+            // escapeHtml() here is load-bearing, not defensive boilerplate: unlike every
+            // other branch above (hardcoded KB text, or GitHub/blog data already escaped
+            // at the source), this is model-generated text ultimately shaped by whatever
+            // web pages the search proxy returned — addMessage() renders it as raw HTML,
+            // so leaving it unescaped would let an indexed page's markup execute here.
+            out = webAnswer
+              ? `${escapeHtml(webAnswer)}<br><br><em>(This answer used a live web search via your browser's on-device AI — not something Veeresh wrote himself.)</em>`
+              : FALLBACK;
+          }
+          addMessage(out, "bot");
         }, 220);
       }
 
