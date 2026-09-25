@@ -275,6 +275,73 @@
     footer a:hover { color: var(--text); }
 
     .note { font-size: .85rem; color: var(--muted); margin-block-start: 1rem; }
+
+    /* ---------- Veer chatbot ---------- */
+    .veer-fab {
+      position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 80;
+      display: inline-flex; align-items: center; gap: .6rem;
+      padding: .8rem 1.1rem; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--accent); color: var(--on-accent); font: 600 .95rem/1 var(--font);
+      box-shadow: var(--shadow); cursor: pointer; transition: transform .15s, box-shadow .15s;
+    }
+    .veer-fab:hover { transform: translateY(-1px); }
+    .veer-fab svg { width: 1.25rem; height: 1.25rem; flex: none; }
+    .veer-fab .veer-fab-label { display: none; }
+    @media (min-width: 30rem) { .veer-fab .veer-fab-label { display: inline; } }
+    .veer-fab[aria-expanded="true"] { background: var(--surface); color: var(--text); }
+
+    .veer-panel {
+      position: fixed; right: 1.25rem; bottom: calc(1.25rem + 4rem); z-index: 81;
+      width: min(23rem, calc(100vw - 2.5rem)); max-height: min(32rem, calc(100vh - 8rem));
+      display: flex; flex-direction: column; overflow: hidden;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .veer-panel[hidden] { display: none; }
+    .veer-head {
+      display: flex; align-items: center; gap: .6rem; padding: .9rem 1rem;
+      border-bottom: 1px solid var(--border); background: var(--surface-2);
+    }
+    .veer-avatar {
+      display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: 50%; flex: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent);
+      font: 800 .8rem/1 var(--font);
+    }
+    .veer-head-text { flex: 1; min-width: 0; }
+    .veer-head-text strong { display: block; font-size: .95rem; color: var(--text); }
+    .veer-head-text span { display: block; font-size: .78rem; color: var(--muted); }
+    .veer-close {
+      flex: none; display: inline-grid; place-items: center; width: 2rem; height: 2rem;
+      border-radius: var(--radius-sm); border: 1px solid transparent; background: transparent; color: var(--muted); cursor: pointer;
+    }
+    .veer-close:hover { color: var(--text); background: var(--surface); border-color: var(--border); }
+    .veer-log {
+      flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .65rem;
+      font-size: .92rem;
+    }
+    .veer-msg { max-width: 88%; padding: .55rem .8rem; border-radius: var(--radius-sm); line-height: 1.5; overflow-wrap: anywhere; }
+    .veer-msg.bot { align-self: flex-start; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .veer-msg.user { align-self: flex-end; background: var(--accent); color: var(--on-accent); }
+    .veer-msg a { color: inherit; text-decoration: underline; }
+    .veer-msg.bot a { color: var(--accent); }
+    .veer-chips { display: flex; flex-wrap: wrap; gap: .4rem; padding: 0 1rem .75rem; }
+    .veer-chip {
+      font: 500 .8rem/1.3 var(--font); padding: .35rem .7rem; border-radius: 999px;
+      background: var(--surface-2); border: 1px solid var(--border); color: var(--text); cursor: pointer;
+    }
+    .veer-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .veer-form { display: flex; gap: .5rem; padding: .75rem; border-top: 1px solid var(--border); }
+    .veer-input {
+      flex: 1; min-width: 0; padding: .6rem .8rem; border-radius: var(--radius-sm); border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font: inherit;
+    }
+    .veer-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .veer-send {
+      flex: none; display: inline-grid; place-items: center; width: 2.6rem; border-radius: var(--radius-sm);
+      border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); cursor: pointer;
+    }
+    .veer-send svg { width: 1.15rem; height: 1.15rem; }
+    .veer-send:disabled { opacity: .5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -512,6 +579,34 @@
     </div>
   </footer>
 
+  <!-- Veer: a small on-page assistant that answers questions about Veeresh using canned, on-site knowledge (no server, no API key). -->
+  <button class="veer-fab" id="veer-fab" type="button" aria-haspopup="dialog" aria-controls="veer-panel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span class="veer-fab-label">Ask Veer</span>
+  </button>
+
+  <section class="veer-panel" id="veer-panel" role="dialog" aria-modal="false" aria-labelledby="veer-title" hidden>
+    <div class="veer-head">
+      <span class="veer-avatar" aria-hidden="true">V</span>
+      <div class="veer-head-text">
+        <strong id="veer-title">Veer</strong>
+        <span>Ask about Veeresh's work</span>
+      </div>
+      <button class="veer-close" id="veer-close" type="button" aria-label="Close chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="veer-log" id="veer-log" role="log" aria-live="polite"></div>
+    <div class="veer-chips" id="veer-chips"></div>
+    <form class="veer-form" id="veer-form">
+      <label class="sr-only" for="veer-input">Ask Veer a question</label>
+      <input class="veer-input" id="veer-input" type="text" autocomplete="off" placeholder="e.g. What's your testing experience?">
+      <button class="veer-send" type="submit" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+      </button>
+    </form>
+  </section>
+
   <script>
     /* ---- Theme toggle: two states — system default, or pinned opposite ---- */
     (() => {
@@ -583,7 +678,202 @@
         const total = document.querySelectorAll("#sites [data-repo]").length;
         document.getElementById("sites-count").textContent = total;
         document.getElementById("stat-sites").textContent = total;
+        window.__veerRepos = sources; // share the live repo list with Veer (see below), sorted by most recently pushed
       } catch (e) { /* offline or rate-limited: static list still works */ }
+    })();
+
+    /* ---- Veer: rule-based Q&A over a small on-page knowledge base. Runs entirely
+       client-side — no API key, no backend, works unchanged on GitHub Pages. ---- */
+    (() => {
+      const fab = document.getElementById("veer-fab");
+      const panel = document.getElementById("veer-panel");
+      const closeBtn = document.getElementById("veer-close");
+      const log = document.getElementById("veer-log");
+      const chipsEl = document.getElementById("veer-chips");
+      const form = document.getElementById("veer-form");
+      const input = document.getElementById("veer-input");
+
+      /* Knowledge base sourced from Veeresh's resume + this page. Deliberately excludes phone
+         number, personal email, and certification/license ID numbers to avoid publishing
+         scrapeable PII in client-side code — contact routes through LinkedIn/GitHub instead. */
+      const KB = [
+        {
+          id: "role",
+          keywords: ["who", "what do you do", "role", "job", "title", "does veeresh do", "about you"],
+          answer: "Veeresh is a Techno-Functional IT Leader — Business Analyst, Product Owner, Certified ScrumMaster, and QA Architect with 20+ years (career start 2008) in enterprise software delivery across property insurance, government education, healthcare, and logistics. He's worked as BA, PO, Scrum Master, QA Manager/Lead/Architect, and SDET, so he covers the whole lifecycle from requirements through release."
+        },
+        {
+          id: "experience",
+          keywords: ["experience", "years", "background", "career", "how long"],
+          answer: "20+ years in enterprise software delivery (career start 2008), blending business strategy (BA / Product Owner) with technical execution (QA Architect / SDET Lead) across property insurance, government/education, healthcare, and logistics. Ask about his \"current role\", \"companies\" he's worked for, or specific clients like FM Global, USBE, GMR, or WERNER."
+        },
+        {
+          id: "current",
+          keywords: ["current role", "currently", "right now", "present job", "working now", "today", "current job", "these days"],
+          answer: "Since September 2024, Veeresh has been Principal QA Architect / Lead Quality Engineer on assignment with Kforce at FM Global (Factory Mutual) in Johnston, RI (remote-capable) — leading quality strategy and business analysis for underwriting and risk-engineering features on a microservices platform serving Fortune 500 clients. Highlights: drove GitHub Copilot Enterprise adoption for QA, built a custom Cypress distributed testing orchestrator, shipped AI-assisted Cypress→Playwright and Selenium→Playwright migration paths, and set up Azure DevOps dashboards for QA visibility — cutting sprint-level defect escapes by about 35%."
+        },
+        {
+          id: "clients",
+          keywords: ["companies", "clients", "worked for", "employers", "worked with", "customers", "clientele"],
+          answer: "Companies and clients Veeresh has worked with: <strong>FM Global</strong> (Factory Mutual, via Kforce — current), <strong>Utah State Board of Education</strong> (USIMS modernization, a $22.9M program) and <strong>Global Medical Response / Access2Care NEMT</strong> (both via R.U.N. Technology Consulting Services, LLC), <strong>WERNER Enterprises</strong> (top-5 North American freight carrier), and <strong>Tricentis</strong> as Transition QA Manager. Earlier in his career: Friendly IT Consultants, Anthelio Healthcare Solutions, Genpact, Deloitte, and Zavata India."
+        },
+        {
+          id: "testing",
+          keywords: ["testing", "qa", "automation", "test strategy", "playwright", "cypress", "selenium", "quality"],
+          answer: "On the QA side: end-to-end test strategy, CI/CD quality gates, and hands-on automation with Playwright, Cypress, Selenium, Cucumber/SpecFlow BDD, TestNG, RestAssured/RestSharp, and Postman. At FM Global he built a custom Cypress distributed testing orchestrator, shipped AI-assisted Cypress→Playwright and Selenium→Playwright migration paths, and coached shift-left testing with Application Insights and Dynatrace observability. At USBE, a Selenium C#→Playwright C#+SpecFlow migration improved performance/maintainability by about 80%. See the <a href=\"#about\">About</a> section for the full skills list."
+        },
+        {
+          id: "ba",
+          keywords: ["business analyst", "requirements", "backlog", "product owner", "scrum master", "stakeholder", "agile"],
+          answer: "As a Business Analyst / Product Owner, Veeresh runs requirements elicitation and JAD sessions, writes user stories & acceptance criteria, manages backlogs and sprint priorities, leads UAT and stakeholder sign-off, and facilitates Scrum/SAFe ceremonies (PI Planning, ART, retros). At WERNER Enterprises he was dual Product Owner and QA Architect across 6+ product lines; at USBE he led statewide UAT with full FERPA traceability in Azure DevOps."
+        },
+        {
+          id: "ai",
+          keywords: ["ai", "llm", "artificial intelligence", "machine learning", "claude", "gpt"],
+          answer: "Veeresh works with AI across both delivery and QA. At FM Global he drove GitHub Copilot Enterprise adoption for test authoring, reviews, and AI-assisted framework migration. He also runs <a href=\"https://runtechcs.com\">runtechcs.com</a> — his consulting company's site, hosted on a Raspberry Pi 4 with a local small language model powering an on-site AI chatbot, built to try edge hosting and local LLM inference without cloud chat services. He writes on AI-driven test strategy at <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a> and on Medium as <em>letsautomate</em>.\n\nRepos worth a look: <a href=\"https://github.com/veeresh-bikkaneti/LLMcouncil\">LLMcouncil</a> (multi-agent LLM orchestration) and <a href=\"https://github.com/veeresh-bikkaneti/cypress-qa-ai-workforce\">cypress-qa-ai-workforce</a> (self-healing AI-assisted Cypress QA)."
+        },
+        {
+          id: "projects",
+          keywords: ["project", "repo", "repository", "github", "code", "portfolio", "work sample"],
+          answer: buildProjectsAnswer
+        },
+        {
+          id: "blog",
+          keywords: ["blog", "writing", "articles", "tech talk", "medium"],
+          answer: "Veeresh writes at <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a> — AI-driven test strategy, self-healing test suites, Playwright, and building quality engineering teams — and on Medium as <em>letsautomate</em>, covering test automation strategy, Playwright, security testing, and Scrum facilitation."
+        },
+        {
+          id: "company",
+          keywords: ["run technology", "own company", "consulting company", "runtechcs", "founder", "his company", "your company"],
+          answer: "Veeresh runs <strong>R.U.N. Technology Consulting Services, LLC</strong> (Lincoln, NE) — its site, <a href=\"https://runtechcs.com\">runtechcs.com</a>, is self-hosted on a Raspberry Pi 4 with a local small language model powering an on-site AI chatbot. Through R.U.N. Technology he's delivered the Utah State Board of Education's USIMS modernization program and the Global Medical Response / Access2Care NEMT platform."
+        },
+        {
+          id: "certifications",
+          keywords: ["certification", "certifications", "certified", "credential", "credentials"],
+          answer: "Certifications: Professional Scrum Master (Scrum.org), SAFe Program Consultant (SPC), Accredited Software Test Automator (test-institute.org), Scrum Master Accredited (scrum-institute.org), Postman API Fundamentals, APIsec: API Security/Auth/Documentation, BDD with SpecFlow Masterclass (Tricentis), Six Sigma Yellow Belt, CompTIA Network+. He's also a Notary Public, State of Nebraska."
+        },
+        {
+          id: "education",
+          keywords: ["education", "degree", "university", "school", "masters", "mba", "studied"],
+          answer: "Education: M.S. Computer Science — Wilmington University, Delaware (2018); MBA — Calorx Teacher's University, Gujarat, India (2012); B.S. Computer Science — Osmania University, India (2005)."
+        },
+        {
+          id: "location",
+          keywords: ["location", "where", "live", "based", "nebraska", "lincoln"],
+          answer: "Veeresh is based in Lincoln, Nebraska, and has worked remote-capable engagements (e.g. his current role with FM Global in Johnston, RI)."
+        },
+        {
+          id: "contact",
+          keywords: ["contact", "hire", "email", "reach", "linkedin", "opportunity", "available", "opportunities"],
+          answer: "Veeresh is open to opportunities. The best way to connect is <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn</a>, or take a look at his <a href=\"https://github.com/veeresh-bikkaneti\">GitHub</a> for code."
+        },
+        {
+          id: "resume",
+          keywords: ["resume", "cv"],
+          answer: "There's no resume file linked here yet — but you can ask me about his experience, current role, companies/clients, testing/QA work, certifications, or education, or check his <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn profile</a> for the full picture."
+        }
+      ];
+
+      const GREETING = "Hi, I'm Veer 👋 — an on-page assistant that can answer quick questions about Veeresh's experience, projects, and how to reach him. I only know what's on this page, so I might miss the odd detail.";
+      const FALLBACK = "I don't have a canned answer for that yet — try asking about his experience, current role, companies/clients, testing/QA work, AI projects, certifications, or how to get in touch. You can also reach Veeresh directly on <a href=\"https://www.linkedin.com/in/sdetbaveer/\">LinkedIn</a>.";
+      const SUGGESTIONS = ["What's your current role?", "What companies have you worked for?", "Tell me about your testing work", "What certifications do you have?"];
+
+      let opened = false;
+
+      /* Builds the "projects" answer from the live GitHub repo list (window.__veerRepos,
+         populated by the auto-discover script above) when it's available, falling back to a
+         static hand-picked list otherwise (offline, rate-limited, or not yet fetched). */
+      function buildProjectsAnswer() {
+        const highlights = "Highlights: <a href=\"https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/\">Tech Talk with Veeresh</a> (blog), <a href=\"https://veeresh-bikkaneti.github.io/system-design-and-architecture/\">System Design Mastery</a> (AI-tutored learning site), <a href=\"https://github.com/veeresh-bikkaneti/cypress-playwright\">cypress-playwright</a> (Cypress→Playwright migration toolkit), <a href=\"https://github.com/veeresh-bikkaneti/cypress-qa-ai-workforce\">cypress-qa-ai-workforce</a> (self-healing Cypress QA system), <a href=\"https://github.com/veeresh-bikkaneti/LLMcouncil\">LLMcouncil</a> (multi-agent LLM orchestration), and <a href=\"https://github.com/veeresh-bikkaneti/azdo-ai-toolkit\">azdo-ai-toolkit</a> (Azure DevOps test-case generation).";
+        const repos = window.__veerRepos;
+        if (!repos || !repos.length) {
+          return `${highlights} See the <a href="#sites">Live sites</a> and <a href="#projects">Selected projects</a> sections, or browse <a href="https://github.com/veeresh-bikkaneti?tab=repositories">all repositories</a>.`;
+        }
+        const top = repos.slice(0, 6)
+          .map(r => `<a href="${r.html_url}">${escapeHtml(r.name)}</a>${r.description ? ` — ${escapeHtml(r.description)}` : ""}`)
+          .join("<br>");
+        return `${highlights}\n\nMost recently updated public repos:<br>${top}\n\nBrowse <a href="https://github.com/veeresh-bikkaneti?tab=repositories">all ${repos.length} repositories</a>.`;
+      }
+
+      function addMessage(text, who) {
+        const div = document.createElement("div");
+        div.className = `veer-msg ${who}`;
+        div.innerHTML = text.replace(/\n\n/g, "<br><br>");
+        log.append(div);
+        log.scrollTop = log.scrollHeight;
+        return div;
+      }
+
+      function renderChips() {
+        chipsEl.innerHTML = "";
+        for (const s of SUGGESTIONS) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "veer-chip";
+          b.textContent = s;
+          b.addEventListener("click", () => ask(s));
+          chipsEl.append(b);
+        }
+      }
+
+      function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+      function bestMatch(query) {
+        const q = ` ${query.toLowerCase().replace(/[^a-z0-9\s]/g, " ")} `; // pad so \b-style boundaries work at the edges
+        let best = null, bestScore = 0;
+        for (const entry of KB) {
+          let score = 0;
+          for (const kw of entry.keywords) {
+            const re = new RegExp(`(?:^|\\s)${escapeRegExp(kw)}s?(?:$|\\s)`); // trailing s? so "project" also matches "projects"
+            if (re.test(q)) score += kw.split(" ").length; // reward longer/more specific phrases
+          }
+          if (score > bestScore) { bestScore = score; best = entry; }
+        }
+        return bestScore > 0 ? best : null;
+      }
+
+      function ask(text) {
+        const trimmed = text.trim();
+        if (!trimmed) return;
+        addMessage(escapeHtml(trimmed), "user");
+        input.value = "";
+        const match = bestMatch(trimmed);
+        const raw = match ? match.answer : FALLBACK;
+        window.setTimeout(() => addMessage(typeof raw === "function" ? raw() : raw, "bot"), 220);
+      }
+
+      function escapeHtml(s) {
+        const d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      function openPanel() {
+        panel.hidden = false;
+        fab.setAttribute("aria-expanded", "true");
+        if (!opened) {
+          opened = true;
+          renderChips();
+          addMessage(GREETING, "bot");
+        }
+        window.setTimeout(() => input.focus(), 50);
+      }
+
+      function closePanel() {
+        panel.hidden = true;
+        fab.setAttribute("aria-expanded", "false");
+        fab.focus();
+      }
+
+      fab.addEventListener("click", () => (panel.hidden ? openPanel() : closePanel()));
+      closeBtn.addEventListener("click", closePanel);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !panel.hidden) closePanel();
+      });
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        ask(input.value);
+      });
     })();
   </script>
 </body>
