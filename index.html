@@ -801,13 +801,40 @@
         },
         {
           id: "current",
-          keywords: ["current role", "currently", "right now", "present job", "working now", "today", "current job", "these days"],
+          keywords: ["current role", "currently", "right now", "present job", "working now", "today", "current job", "these days", "fm global", "factory mutual"],
           answer: "Right now, Veeresh is Principal QA Architect / Lead Quality Engineer on assignment with Kforce at FM Global (Factory Mutual) in Johnston, RI — remote-capable, in the role since September 2024. He leads quality strategy and business analysis for underwriting and risk-engineering features on a microservices platform serving Fortune 500 clients. A few things he's driven there: GitHub Copilot Enterprise adoption for QA, a custom Cypress distributed testing orchestrator, AI-assisted Cypress→Playwright and Selenium→Playwright migration paths, and Azure DevOps dashboards for QA visibility — work he credits with cutting sprint-level defect escapes by about 35%. <em>(Per his most recent resume — worth confirming directly if the timing matters to you.)</em>"
         },
         {
           id: "clients",
+          // Overview entry only — kept generic so a broad "who have you worked for"
+          // question still lands here, but so it never outranks the per-employer
+          // entries below when a specific company is named (see bestMatch()'s weight
+          // scheme). Splitting this used to be one paragraph naming ~8 employers with
+          // no per-employer keywords, so "what did you do at WERNER" scored 0 against
+          // every entry and fell through to FALLBACK.
+          generic: true,
           keywords: ["companies", "clients", "worked for", "employers", "worked with", "customers", "clientele"],
-          answer: "Companies and clients Veeresh has worked with: <strong>FM Global</strong> (Factory Mutual, via Kforce — current), <strong>Utah State Board of Education</strong> (USIMS modernization, a $22.9M program) and <strong>Global Medical Response / Access2Care NEMT</strong> (both via R.U.N. Technology Consulting Services, LLC), <strong>WERNER Enterprises</strong> (top-5 North American freight carrier), and <strong>Tricentis</strong> as Transition QA Manager. Earlier in his career: Friendly IT Consultants, Anthelio Healthcare Solutions, Genpact, Deloitte, and Zavata India."
+          answer: "Companies and clients Veeresh has worked with: <strong>FM Global</strong> (Factory Mutual, via Kforce — current), <strong>Utah State Board of Education</strong> (USIMS modernization, a $22.9M program) and <strong>Global Medical Response / Access2Care NEMT</strong> (both via R.U.N. Technology Consulting Services, LLC), <strong>WERNER Enterprises</strong> (top-5 North American freight carrier), and <strong>Tricentis</strong> as Transition QA Manager. Earlier in his career: Friendly IT Consultants, Anthelio Healthcare Solutions, Genpact, Deloitte, and Zavata India. Ask me about a specific one by name (e.g. \"WERNER\", \"USBE\", \"Access2Care\", or \"Tricentis\") for more detail."
+        },
+        {
+          id: "werner",
+          keywords: ["werner", "werner enterprises"],
+          answer: "At <strong>WERNER Enterprises</strong> (a top-5 North American freight carrier), Veeresh served as dual Product Owner and QA Architect across 6+ product lines — combining backlog/requirements ownership with hands-on QA architecture on the same engagement."
+        },
+        {
+          id: "usbe",
+          keywords: ["usbe", "usims", "utah state board", "utah state board of education", "utah education"],
+          answer: "At the <strong>Utah State Board of Education</strong> (USBE), Veeresh worked the USIMS modernization program (a $22.9M initiative), delivered via R.U.N. Technology Consulting Services, LLC. He led statewide UAT with full FERPA traceability in Azure DevOps, and drove a Selenium C#→Playwright C#+SpecFlow migration there that improved performance and maintainability by about 80%."
+        },
+        {
+          id: "gmr",
+          keywords: ["gmr", "access2care", "global medical response", "nemt"],
+          answer: "At <strong>Global Medical Response / Access2Care</strong> (a NEMT — non-emergency medical transportation — platform), delivered via R.U.N. Technology Consulting Services, LLC alongside the USBE USIMS program, Veeresh contributed his BA/QA delivery work to the same engagement portfolio. Ask about \"USBE\" for the sibling engagement's specifics (statewide UAT, FERPA traceability, the Selenium→Playwright migration)."
+        },
+        {
+          id: "tricentis",
+          keywords: ["tricentis"],
+          answer: "At <strong>Tricentis</strong>, Veeresh served as Transition QA Manager. He's also completed Tricentis' \"BDD with SpecFlow Masterclass\" certification."
         },
         {
           id: "testing",
@@ -1028,8 +1055,25 @@
 
       function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 
+      // Negation words/contractions checked just before a matched keyword (see isNegatedNear
+      // below). Deliberately simple — a fixed word list within a short trailing window, not
+      // real negation-scope parsing — since this only needs to catch the common "you DON'T
+      // have a resume" / "NOT experienced in X" phrasing, not every way English can negate.
+      const NEGATION_RE = /\b(not|never|no|n't|isn't|aren't|wasn't|weren't|don't|doesn't|didn't|won't|wouldn't|couldn't|shouldn't|can't|hasn't|haven't|hadn't)\b/;
+
+      // True if a negation word appears within `windowChars` characters immediately before
+      // `matchIndex` in `rawPadded` (the *unstripped*, lowercased query — punctuation and
+      // apostrophes intact, so "don't"/"isn't" contractions still read as whole words).
+      // `rawPadded` must be built the same way, and therefore stay the same length, as the
+      // punctuation-stripped `q` that produced `matchIndex`, so the two indices line up.
+      function isNegatedNear(rawPadded, matchIndex, windowChars) {
+        const start = Math.max(0, matchIndex - windowChars);
+        return NEGATION_RE.test(rawPadded.slice(start, matchIndex));
+      }
+
       function bestMatch(query) {
         const q = ` ${query.toLowerCase().replace(/[^a-z0-9\s]/g, " ")} `; // pad so \b-style boundaries work at the edges
+        const rawPadded = ` ${query.toLowerCase()} `; // same padding, punctuation/apostrophes kept — for negation context only
         let best = null, bestScore = 0;
         for (const entry of KB) {
           let score = 0;
@@ -1041,8 +1085,20 @@
           const weight = entry.generic ? 1 : 100;
           for (const kw of entry.keywords) {
             const re = new RegExp(`(?:^|\\s)${escapeRegExp(kw)}s?(?:$|\\s)`); // trailing s? so "project" also matches "projects"
-            if (re.test(q)) score += kw.split(" ").length * weight + kw.length;
+            const m = re.exec(q);
+            if (!m) continue;
+            // Negation guard: "you do NOT have a resume, right?" still contains the
+            // "resume" keyword, but a naive score would return the resume answer as if
+            // affirming it. If a negation word sits shortly before this keyword match,
+            // treat the keyword as not matched at all rather than trying to guess what
+            // a negated answer should say.
+            if (isNegatedNear(rawPadded, m.index, 24)) continue;
+            score += kw.split(" ").length * weight + kw.length;
           }
+          // Tie-break, made explicit: strictly-greater means the *first* KB entry to reach
+          // a given score keeps it, so on an exact tie the earlier array entry wins. This is
+          // deliberate (KB entries are ordered so more specific/likely entries sit earlier),
+          // not an accident of the comparison operator — keep `>` here, not `>=`.
           if (score > bestScore) { bestScore = score; best = entry; }
         }
         return bestScore > 0 ? best : null;
