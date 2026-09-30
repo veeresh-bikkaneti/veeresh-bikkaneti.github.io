@@ -3,12 +3,96 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>About — Veeresh Bikkaneti</title>
-  <link rel="canonical" href="https://veeresh-bikkaneti.github.io/#about">
-  <meta http-equiv="refresh" content="0;url=https://veeresh-bikkaneti.github.io/#about">
-  <script>location.replace("https://veeresh-bikkaneti.github.io/#about");</script>
+  <meta name="description" content="Principal QA Architect, Product Owner, Scrum Master, and SDET Lead. Experience, highlights, certifications.">
+  <link rel="canonical" href="https://veeresh-bikkaneti.github.io/about.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: light dark; --bg:#f7f9fb; --surface:#fff; --text:#0f1b26; --muted:#4a5968; --border:#dbe3ea; --accent:#0e7490; --font:Inter,system-ui,sans-serif; --radius:14px; --max:48rem; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#0b1117; --surface:#111a23; --text:#e6edf3; --muted:#9aabbb; --border:#243240; --accent:#22d3ee; } }
+    * { box-sizing: border-box; }
+    body { margin:0; font:1rem/1.6 var(--font); color:var(--text); background:var(--bg); }
+    .wrap { width:min(100% - 2rem, var(--max)); margin-inline:auto; padding-block:2.5rem 4rem; }
+    a { color:var(--accent); }
+    h1 { font-size:clamp(1.8rem,4vw,2.4rem); margin:0 0 .4rem; }
+    h2 { font-size:1.15rem; margin:2rem 0 .75rem; }
+    .lede { color:var(--muted); margin:0 0 1.5rem; }
+    .nav { display:flex; gap:1rem; margin-block-end:2rem; }
+    .metrics, .certs { display:grid; gap:.75rem; grid-template-columns:repeat(auto-fit,minmax(10rem,1fr)); }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1rem 1.15rem; }
+    .card strong { display:block; font-size:1.2rem; }
+    .card span, .meta { color:var(--muted); font-size:.9rem; }
+    .job { margin-block:1rem; }
+    .job h3 { margin:0 0 .2rem; font-size:1.05rem; }
+    ul { margin:.4rem 0 0; padding-inline-start:1.15rem; }
+  </style>
 </head>
 <body>
-  <p>About lives on the home page. <a href="https://veeresh-bikkaneti.github.io/#about">Continue</a>.</p>
+  <main class="wrap">
+    <p class="nav"><a href="./">Home</a><a href="https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/">Blog</a></p>
+    <h1>About</h1>
+    <p class="lede">Principal QA Architect and Agile delivery lead with 20+ years across property insurance, government education, healthcare, and logistics. Dual-threaded: Product Owner / Business Analyst on the strategy side; Principal Test Architect / SDET Lead on the engineering side.</p>
+    <div class="metrics">
+      <div class="card"><strong>35–40%</strong><span>Release reliability</span></div>
+      <div class="card"><strong>60%</strong><span>Faster test execution</span></div>
+      <div class="card"><strong>95%</strong><span>API coverage on critical flows</span></div>
+      <div class="card"><strong>30%</strong><span>Less sprint planning overhead</span></div>
+      <div class="card"><strong>40%</strong><span>Environment reliability</span></div>
+      <div class="card"><strong>80%</strong><span>Playwright performance gain</span></div>
+    </div>
+    <h2>Experience</h2>
+    <article class="card job">
+      <h3>FM Global (Factory Mutual)</h3>
+      <p class="meta">Principal QA Architect, Quality Enablement · Sep 2024 – Present</p>
+      <ul>
+        <li>Enterprise quality architecture — 35% improvement in release reliability</li>
+        <li>Playwright + Cypress strategy — 60% faster execution, 40% efficiency gain</li>
+        <li>GraphQL/REST API testing — 95% coverage of critical flows</li>
+        <li>Azure DevOps governance — 30% less sprint planning overhead</li>
+        <li>Docker test infra and a CoE for automation</li>
+      </ul>
+    </article>
+    <article class="card job">
+      <h3>Utah State Board of Education — USIMS Modernization ($22.9M)</h3>
+      <p class="meta">Principal SDET Lead / Business Analyst · Oct 2021 – Sep 2024</p>
+      <ul>
+        <li>Selenium C# to Playwright C# + SpecFlow — 80% test performance improvement</li>
+        <li>Shared C# automation library — 20% efficiency increase</li>
+        <li>JAD sessions and FERPA-traceable stories for statewide K-12 data</li>
+      </ul>
+    </article>
+    <article class="card job">
+      <h3>Global Medical Response — Access2Care NEMT</h3>
+      <p class="meta">Principal SDET Lead / Business Analyst · Oct 2021 – Sep 2024</p>
+      <ul>
+        <li>API integration strategy — 95% coverage of core ordering flows</li>
+        <li>C#/.NET + Playwright/Selenium with Azure Pipelines</li>
+        <li>15+ accessibility issues found pre-launch in WCAG reviews</li>
+      </ul>
+    </article>
+    <article class="card job">
+      <h3>WERNER Enterprises</h3>
+      <p class="meta">Product Owner / Principal SDET Architect · Aug 2018 – Jul 2021</p>
+      <ul>
+        <li>Product Owner across 6+ lines — backlog, vision, sprint priorities</li>
+        <li>SAFe PI Planning and ART ceremonies as QA lead</li>
+        <li>Java (Cucumber-Spring) and C# (SpecFlow) automation — 20% coverage increase, 10% less defect leakage</li>
+      </ul>
+    </article>
+    <h2>Certifications & education</h2>
+    <div class="certs">
+      <p class="card"><strong>Professional Scrum Master</strong><span>Scrum.org · License 507790</span></p>
+      <p class="card"><strong>Postman API Fundamentals</strong><span>Postman · Apr 2024</span></p>
+      <p class="card"><strong>BDD with SpecFlow Masterclass</strong><span>Jul 2023</span></p>
+      <p class="card"><strong>Six Sigma Yellow Belt</strong><span>MACOBIE · ID 001102</span></p>
+      <p class="card"><strong>M.S. Computer Science</strong><span>Wilmington University · 2018</span></p>
+      <p class="card"><strong>MBA</strong><span>Calorx Teacher's University · 2012</span></p>
+      <p class="card"><strong>B.S. Computer Science</strong><span>Osmania University · 2005</span></p>
+    </div>
+    <h2>Contact</h2>
+    <p><a href="mailto:resume.qasdet@gmail.com">resume.qasdet@gmail.com</a> · <a href="https://www.linkedin.com/in/sdetbaveer/">LinkedIn</a> · <a href="https://github.com/veeresh-bikkaneti">GitHub</a> · <a href="https://medium.com/@veeresh.esh">Medium</a></p>
+  </main>
 </body>
 </html>
