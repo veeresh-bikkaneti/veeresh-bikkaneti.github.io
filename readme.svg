@@ -5,18 +5,18 @@
   <style>
     svg {
       --bg1:#f3efff; --bg2:#def5ff; --ink:#1c1846; --muted:#4b4878;
-      --cy:#0e7490; --pu:#6d28d9; --or:#c2410c; --gr:#15803d;
-      --orb:.5; --opu:#8b5cf6; --ocy:#22d3ee; --oor:#fb923c; --gc:#ffffff; --g1:.72; --g2:.34; --s1:.95; --s2:.35; --shadow:rgba(76,29,149,.22);
-      --pill:rgba(255,255,255,.55); --scan:.32; --glow:rgba(14,116,144,.45); --track:rgba(28,24,70,.14);
+      --cy:#0b5d75; --pu:#6d28d9; --or:#c2410c; --gr:#166534;
+      --orb:.8; --opu:#8b5cf6; --ocy:#22d3ee; --oor:#fb923c; --gc:#ffffff; --g1:.72; --g2:.34; --s1:.95; --s2:.35; --shadow:rgba(76,29,149,.22);
+      --pill:rgba(255,255,255,.55); --scan:.32; --track:rgba(28,24,70,.14);
       --sheen:.55;
-      font-family:'Fira Code','JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace,sans-serif;
+      font-family:'Fira Code','JetBrains Mono',monospace,sans-serif;
     }
     @media (prefers-color-scheme: dark) {
       svg {
         --bg1:#080517; --bg2:#140a33; --ink:#eaf6ff; --muted:#a9b4d6;
         --cy:#22d3ee; --pu:#a78bfa; --or:#fb923c; --gr:#4ade80;
-        --orb:.55; --opu:#7c3aed; --ocy:#06b6d4; --oor:#f97316; --gc:#0d0826; --g1:.50; --g2:.30; --s1:.55; --s2:.10; --shadow:rgba(0,0,0,.55);
-        --pill:rgba(8,5,26,.38); --scan:.4; --glow:rgba(34,211,238,.75); --track:rgba(255,255,255,.14);
+        --orb:.95; --opu:#7c3aed; --ocy:#06b6d4; --oor:#f97316; --gc:#0d0826; --g1:.50; --g2:.30; --s1:.55; --s2:.10; --shadow:rgba(0,0,0,.55);
+        --pill:rgba(8,5,26,.38); --scan:.4; --track:rgba(255,255,255,.14);
         --sheen:.9;
       }
     }
@@ -25,6 +25,7 @@
     .o-pu { stop-color:var(--opu); stop-opacity:var(--orb); }
     .o-cy { stop-color:var(--ocy); stop-opacity:var(--orb); }
     .o-or { stop-color:var(--oor); stop-opacity:var(--orb); }
+    .z { stop-opacity:0; }
     .gf1 { stop-color:var(--gc); stop-opacity:var(--g1); } .gf2 { stop-color:var(--gc); stop-opacity:var(--g2); }
     .sc0 { stop-color:var(--cy); stop-opacity:0; } .sc1 { stop-color:var(--cy); stop-opacity:var(--scan); }
     .gs1 { stop-color:#fff; stop-opacity:var(--s1); } .gs2 { stop-color:#fff; stop-opacity:var(--s2); }
@@ -34,19 +35,20 @@
     .inner { fill:url(#glassFill); stroke:url(#glassStroke); stroke-width:1; }
     .pill  { fill:var(--pill); stroke:url(#glassStroke); stroke-width:1; }
 
-    .orb { animation:drift 14s ease-in-out infinite alternate; }
+    .orb { transform-box:fill-box; transform-origin:center; animation:drift 14s ease-in-out infinite alternate; }
     .orb.b { animation-duration:18s; animation-delay:-6s; }
     .orb.c { animation-duration:16s; animation-delay:-3s; }
     @keyframes drift { from { transform:translate(-22px,-14px) scale(1); } to { transform:translate(26px,18px) scale(1.12); } }
 
-    .sheen { animation:sweep 9s ease-in-out 1.2s infinite; }
-    @keyframes sweep { 0% { transform:translateX(-340px); } 55%,100% { transform:translateX(980px); } }
+    .sheen { transform-origin:0 0; animation:sweep 9s ease-in-out 1.2s infinite both; }
+    @keyframes sweep { 0% { transform:translateX(-340px) skewX(-18deg); } 55%,100% { transform:translateX(980px) skewX(-18deg); } }
 
     text { fill:var(--ink); }
     .label { font-size:11px; letter-spacing:.16em; fill:var(--muted); }
     .title { font-size:11px; fill:var(--muted); }
     .cy { fill:var(--cy); } .pu { fill:var(--pu); } .or { fill:var(--or); } .gr { fill:var(--gr); }
     .mut { fill:var(--muted); }
+    .f-cy { fill:var(--cy); } .f-pu { fill:var(--pu); } .f-or { fill:var(--or); }
 
     /* ASCII art */
     .art { font-size:12px; white-space:pre; }
@@ -55,21 +57,21 @@
     .r { animation:reveal .55s cubic-bezier(.2,.8,.2,1) both; }
     @keyframes reveal { from { opacity:0; fill:var(--or); } 60% { opacity:1; fill:var(--or); } }
     #ascii-art { animation:glow 3.6s ease-in-out 2.2s infinite, float 6s ease-in-out 2.2s infinite; }
-    @keyframes glow  { 0%,100% { filter:drop-shadow(0 0 1px var(--glow)); } 50% { filter:drop-shadow(0 0 7px var(--glow)); } }
+    @keyframes glow  { 0%,100% { opacity:.82; } 50% { opacity:1; } }
     @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-3px); } }
-    .scan { animation:scan 4.2s linear 1.6s infinite; }
+    .scan { animation:scan 4.2s linear 1.6s infinite both; }
     @keyframes scan { 0% { transform:translateY(0); opacity:0; } 10% { opacity:1; } 90% { opacity:1; } 100% { transform:translateY(187px); opacity:0; } }
 
     /* typing */
     .head { font-size:17px; font-weight:600; white-space:pre; }
-    #type-clip rect { transform-box:fill-box; transform-origin:0 0; animation:typing 9s steps(31,end) .8s infinite; }
+    #type-clip rect { transform-box:fill-box; transform-origin:0 0; animation:typing 9s steps(31,end) .8s infinite both; }
     @keyframes typing { 0% { transform:scaleX(0); } 36%,86% { transform:scaleX(1); } 100% { transform:scaleX(0); } }
-    #cursor-move { transform:translateX(316.2px); animation:caret 9s steps(31,end) .8s infinite; }
+    #cursor-move { transform:translateX(316.2px); animation:caret 9s steps(31,end) .8s infinite both; }
     @keyframes caret { 0% { transform:translateX(0); } 36%,86% { transform:translateX(316.2px); } 100% { transform:translateX(0); } }
     .blink { animation:blink 1s steps(1,end) infinite; }
     @keyframes blink { 0%,49% { opacity:1; } 50%,100% { opacity:0; } }
     .cursor { fill:var(--cy); }
-    .later { animation:fadeUp .6s ease-out both; }
+    .later { white-space:pre; animation:fadeUp .6s ease-out both; }
     .l1 { animation-delay:4.2s; } .l2 { animation-delay:4.8s; }
     @keyframes fadeUp { from { opacity:0; } to { opacity:1; } }
 
@@ -90,14 +92,13 @@
 
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop class="bg1" offset="0"/><stop class="bg2" offset="1"/></linearGradient>
-    <radialGradient id="orbPu"><stop class="o-pu" offset="0"/><stop class="o-pu" offset="1" stop-opacity="0"/></radialGradient>
-    <radialGradient id="orbCy"><stop class="o-cy" offset="0"/><stop class="o-cy" offset="1" stop-opacity="0"/></radialGradient>
-    <radialGradient id="orbOr"><stop class="o-or" offset="0"/><stop class="o-or" offset="1" stop-opacity="0"/></radialGradient>
+    <radialGradient id="orbPu"><stop class="o-pu" offset="0"/><stop class="o-pu z" offset="1"/></radialGradient>
+    <radialGradient id="orbCy"><stop class="o-cy" offset="0"/><stop class="o-cy z" offset="1"/></radialGradient>
+    <radialGradient id="orbOr"><stop class="o-or" offset="0"/><stop class="o-or z" offset="1"/></radialGradient>
     <linearGradient id="glassFill" x1="0" y1="0" x2="0.4" y2="1"><stop class="gf1" offset="0"/><stop class="gf2" offset="1"/></linearGradient>
     <linearGradient id="glassStroke" x1="0" y1="0" x2="1" y2="1"><stop class="gs1" offset="0"/><stop class="gs2" offset="1"/></linearGradient>
     <linearGradient id="sheenGrad" x1="0" y1="0" x2="1" y2="0"><stop class="sh0" offset="0"/><stop class="sh1" offset=".5"/><stop class="sh0" offset="1"/></linearGradient>
     <linearGradient id="scanGrad" x1="0" y1="0" x2="0" y2="1"><stop class="sc0" offset="0"/><stop class="sc1" offset="1"/></linearGradient>
-    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>
     <clipPath id="main-clip"><rect x="24" y="24" width="752" height="352" rx="28"/></clipPath>
     <clipPath id="art-clip"><rect x="56" y="110" width="284" height="191"/></clipPath>
     <clipPath id="type-clip"><rect x="396" y="98" width="316.2" height="34"/></clipPath>
@@ -105,21 +106,21 @@
 
   <g id="background">
     <rect width="800" height="400" fill="url(#bg)"/>
-    <g id="orbs" filter="url(#soft)">
-      <circle class="orb"   cx="150" cy="80"  r="190" fill="url(#orbPu)"/>
-      <circle class="orb b" cx="430" cy="360" r="170" fill="url(#orbCy)"/>
-      <circle class="orb c" cx="700" cy="60"  r="160" fill="url(#orbOr)"/>
+    <g id="orbs">
+      <circle class="orb"   cx="150" cy="90"  r="270" fill="url(#orbPu)"/>
+      <circle class="orb b" cx="430" cy="370" r="260" fill="url(#orbCy)"/>
+      <circle class="orb c" cx="700" cy="60"  r="240" fill="url(#orbOr)"/>
     </g>
   </g>
 
   <g id="glass-shell">
     <rect class="glass" x="24" y="24" width="752" height="352" rx="28"/>
-    <g clip-path="url(#main-clip)"><rect class="sheen" x="0" y="-40" width="140" height="480" fill="url(#sheenGrad)" transform="skewX(-18)" style="transform-box:view-box"/></g>
+    <g clip-path="url(#main-clip)"><rect class="sheen" x="0" y="-40" width="140" height="480" fill="url(#sheenGrad)"/></g>
   </g>
 
   <g id="ascii-card">
     <rect class="inner" x="48" y="48" width="300" height="304" rx="20"/>
-    <circle cx="68" cy="68" r="4.5" fill="var(--or)"/><circle cx="84" cy="68" r="4.5" fill="var(--pu)"/><circle cx="100" cy="68" r="4.5" fill="var(--cy)"/>
+    <circle class="f-or" cx="68" cy="68" r="4.5"/><circle class="f-pu" cx="84" cy="68" r="4.5"/><circle class="f-cy" cx="100" cy="68" r="4.5"/>
     <text class="title" x="332" y="72" text-anchor="end">~/dev.sh</text>
     <g id="ascii-art">
       <text class="art c r" x="82.8" y="124" style="animation-delay:0.35s" textLength="230.4" lengthAdjust="spacing" xml:space="preserve">   .-----------------------.    </text>
@@ -132,7 +133,7 @@
       <text class="art c r" x="82.8" y="243" style="animation-delay:1.26s" textLength="230.4" lengthAdjust="spacing" xml:space="preserve">   | '-------------------' |    </text>
       <text class="art c r" x="82.8" y="260" style="animation-delay:1.39s" textLength="230.4" lengthAdjust="spacing" xml:space="preserve">   '-----------------------'    </text>
       <text class="art c r" x="82.8" y="277" style="animation-delay:1.52s" textLength="230.4" lengthAdjust="spacing" xml:space="preserve">/_____________[___]____________\</text>
-      <text class="art c r" x="82.8" y="294" style="animation-delay:1.65s" textLength="230.4" lengthAdjust="spacing" xml:space="preserve">'-----------------------------' </text>
+      <text class="art c r" x="82.8" y="294" style="animation-delay:1.65s" textLength="230.4" lengthAdjust="spacing" xml:space="preserve">'------------------------------'</text>
       <rect class="blink ac" x="198.0" y="216" width="6.6" height="12" rx="1"/>
       <g clip-path="url(#art-clip)"><rect class="scan" x="56" y="110" width="284" height="22" fill="url(#scanGrad)"/></g>
     </g>
@@ -141,7 +142,7 @@
 
   <g id="terminal-card">
     <rect class="inner" x="372" y="48" width="380" height="176" rx="20"/>
-    <circle cx="392" cy="68" r="4.5" fill="var(--or)"/><circle cx="408" cy="68" r="4.5" fill="var(--pu)"/><circle cx="424" cy="68" r="4.5" fill="var(--cy)"/>
+    <circle class="f-or" cx="392" cy="68" r="4.5"/><circle class="f-pu" cx="408" cy="68" r="4.5"/><circle class="f-cy" cx="424" cy="68" r="4.5"/>
     <text class="title" x="736" y="72" text-anchor="end">zsh</text>
     <g id="typing-headline">
       <g clip-path="url(#type-clip)">
@@ -158,27 +159,27 @@
     <rect class="inner" x="372" y="240" width="380" height="112" rx="20"/>
     <g id="tile-build">
       <rect class="pill" x="388" y="256" width="112" height="80" rx="14"/>
-      <circle class="dot" cx="404" cy="274" r="3.5" fill="var(--cy)"/>
+      <circle class="f-cy dot" cx="404" cy="274" r="3.5"/>
       <text class="label" x="414" y="278">BUILD</text>
       <text x="402" y="304" font-size="14" font-weight="600">passing</text>
       <rect class="track" x="402" y="316" width="84" height="5" rx="2.5"/>
-      <rect class="bar" x="402" y="316" width="84" height="5" rx="2.5" fill="var(--cy)"/>
+      <rect class="f-cy bar" x="402" y="316" width="84" height="5" rx="2.5"/>
     </g>
     <g id="tile-test">
       <rect class="pill" x="506" y="256" width="112" height="80" rx="14"/>
-      <circle class="dot d2" cx="522" cy="274" r="3.5" fill="var(--pu)"/>
+      <circle class="f-pu dot d2" cx="522" cy="274" r="3.5"/>
       <text class="label" x="532" y="278">TEST</text>
       <text x="520" y="304" font-size="14" font-weight="600">all green</text>
       <rect class="track" x="520" y="316" width="84" height="5" rx="2.5"/>
-      <rect class="bar b2" x="520" y="316" width="84" height="5" rx="2.5" fill="var(--pu)"/>
+      <rect class="f-pu bar b2" x="520" y="316" width="84" height="5" rx="2.5"/>
     </g>
     <g id="tile-ship">
       <rect class="pill" x="624" y="256" width="112" height="80" rx="14"/>
-      <circle class="dot d3" cx="640" cy="274" r="3.5" fill="var(--or)"/>
+      <circle class="f-or dot d3" cx="640" cy="274" r="3.5"/>
       <text class="label" x="650" y="278">SHIP</text>
       <text x="638" y="304" font-size="14" font-weight="600">on repeat</text>
       <rect class="track" x="638" y="316" width="84" height="5" rx="2.5"/>
-      <rect class="bar b3" x="638" y="316" width="84" height="5" rx="2.5" fill="var(--or)"/>
+      <rect class="f-or bar b3" x="638" y="316" width="84" height="5" rx="2.5"/>
     </g>
   </g>
 </svg>
