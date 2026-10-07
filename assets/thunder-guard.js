@@ -176,10 +176,20 @@
     tone(when, 52, 0.7, 0.26, "sine", 36);
     noiseBurst(when, 0.75, { type: "lowpass", freq: 260, q: 0.7, peak: 0.18, sweepTo: 70 });
   }
-  function playRattle(when) {
-    tone(when, 720, 0.05, 0.045, "square", 410);
-    tone(when + 0.08, 540, 0.05, 0.035, "square", 320);
-    tone(when + 0.15, 860, 0.04, 0.03, "triangle", 480);
+  function playBoom(when) {
+    tone(when, 82, 0.42, 0.5, "sine", 32);
+    tone(when, 46, 0.55, 0.36, "sine", 26);
+    noiseBurst(when, 0.2, { type: "lowpass", freq: 160, q: 0.5, peak: 0.32, sweepTo: 50 });
+  }
+  function playBlast(when) {
+    noiseBurst(when, 0.2, { type: "highpass", freq: 1600, q: 0.45, peak: 0.46 });
+    tone(when, 740, 0.1, 0.1, "square", 160);
+    noiseBurst(when, 0.32, { type: "bandpass", freq: 520, q: 0.7, peak: 0.26, sweepTo: 120 });
+  }
+  function playThunder(when) {
+    tone(when, 54, 1.2, 0.4, "sine", 28);
+    tone(when + 0.1, 40, 1.35, 0.3, "sine", 22);
+    noiseBurst(when, 1.3, { type: "lowpass", freq: 280, q: 0.45, peak: 0.3, sweepTo: 48 });
   }
   function playHit(when) {
     var partials = [118, 176, 263, 397, 610, 890];
@@ -235,7 +245,9 @@
     fromY: 0,
     ctrlX: 0,
     ctrlY: 0,
-    hit: false
+    hit: false,
+    go: "",
+    blank: false
   };
 
   var particles = [];
@@ -336,19 +348,34 @@
     if (ac && !muted) {
       var t0 = ac.currentTime + 0.01;
       if (reduceMotion) {
-        playCrack(t0);
-        playHit(t0 + 0.06);
+        playBoom(t0);
+        playBlast(t0 + 0.16);
+        playThunder(t0 + 0.34);
       } else {
-        playCrack(t0);
-        playWhoosh(t0 + 0.04, 0.22);
+        playWhoosh(t0, 0.16);
       }
     }
     wake();
   }
 
+  function clearMark() {
+    if (!smash.mark) return;
+    smash.mark.el.style.outline = smash.mark.outline;
+    smash.mark.el.style.outlineOffset = smash.mark.offset;
+    smash.mark = null;
+  }
+
   function endSmash() {
     smash.active = false;
     hideHero();
+    clearMark();
+    var url = smash.go;
+    var blank = smash.blank;
+    smash.go = "";
+    smash.blank = false;
+    if (!url) return;
+    if (blank) window.open(url, "_blank", "noopener");
+    else window.location.assign(url);
   }
 
   function impactCenter(sw, sh) {
@@ -367,56 +394,44 @@
     var hit = impactCenter(sw, sw / poses.smash.aspect);
     face = smash.face;
 
+    var lookX = smash.x - smash.face * 72;
+    var lookY = smash.y - 64;
+
     if (reduceMotion) {
-      var a = t < 0.1 ? t / 0.1 : t > 0.65 ? Math.max(0, 1 - (t - 0.65) / 0.35) : 1;
-      if (!smash.hit && t > 0.08) {
+      var a = t < 0.08 ? t / 0.08 : 1;
+      if (!smash.hit && t > 0.05) {
         smash.hit = true;
         burst(smash.x, smash.y);
       }
       place("smash", hit.x, hit.y, sw, 0, a, 1);
-      if (t > 1.05) endSmash();
+      if (t > 0.7) endSmash();
       return;
     }
 
-    if (t < 1.15) {
-      var u = easeOut(t / 1.15);
-      var px = quad(smash.fromX, smash.ctrlX, hit.x, u);
-      var py = quad(smash.fromY, smash.ctrlY, hit.y - 48, u);
-      place("fly", px, py, fw, lerp(smash.face * -16, smash.face * 5, u), 1, lerp(0.62, 1, u));
-    } else if (t < 2.05) {
-      var s = (t - 1.15) / 0.9;
-      if (!smash.rattled) {
-        smash.rattled = true;
-        if (audioUnlocked && !muted && audioCtx) {
-          playRattle(audioCtx.currentTime);
-          playRumble(audioCtx.currentTime + 0.05);
-        }
-      }
-      var jx = Math.sin(s * 18) * (1 - s * 0.2) * 8;
-      var jy = Math.cos(s * 14) * 5;
-      place("fly", hit.x + jx, hit.y - 48 + jy, fw, Math.sin(s * 12) * 6, 1, 1.06);
-    } else if (t < 2.55) {
-      var d = easeIn((t - 2.05) / 0.5);
-      place("smash", hit.x, lerp(hit.y - 48, hit.y, d), sw, lerp(0, smash.face * 7, d), 1, lerp(1.04, 1.16, d));
-    } else if (t < 3.7) {
+    if (t < 0.85) {
+      var u = easeOut(t / 0.85);
+      var px = quad(smash.fromX, smash.ctrlX, lookX, u);
+      var py = quad(smash.fromY, smash.ctrlY, lookY, u);
+      place("fly", px, py, fw, lerp(smash.face * -14, smash.face * 8, u), 1, lerp(0.7, 1, u));
+    } else if (t < 1.4) {
+      var s = (t - 0.85) / 0.55;
+      place("fly", lookX, lookY + Math.sin(s * Math.PI) * 3, fw, smash.face * 10, 1, 1.02);
+    } else if (t < 1.82) {
+      var d = easeIn((t - 1.4) / 0.42);
+      place("smash", lerp(lookX, hit.x, d), lerp(lookY, hit.y, d), sw, lerp(smash.face * 8, smash.face * 4, d), 1, lerp(1.02, 1.14, d));
+    } else if (t < 2.7) {
       if (!smash.hit) {
         smash.hit = true;
         burst(smash.x, smash.y);
-        if (audioUnlocked && !muted && audioCtx) playHit(audioCtx.currentTime + 0.01);
+        if (audioUnlocked && !muted && audioCtx) {
+          var now = audioCtx.currentTime + 0.01;
+          playBoom(now);
+          playBlast(now + 0.18);
+          playThunder(now + 0.38);
+        }
       }
-      var h = (t - 2.55) / 1.15;
-      place(
-        "smash",
-        hit.x + Math.sin(h * 10) * (1 - h) * 3,
-        hit.y,
-        sw,
-        smash.face * 3 * (1 - h),
-        1,
-        lerp(1.16, 1.04, Math.min(1, h * 1.4))
-      );
-    } else if (t < 4.45) {
-      var out = (t - 3.7) / 0.75;
-      place("smash", hit.x + smash.face * out * 90, hit.y - out * 70, sw, -smash.face * 8 * out, 1 - out, 1);
+      var h = (t - 1.82) / 0.88;
+      place("smash", hit.x, hit.y, sw, smash.face * 2 * (1 - h), 1, lerp(1.14, 1.05, Math.min(1, h)));
     } else {
       endSmash();
     }
@@ -467,7 +482,7 @@
     var dim = 0;
     if (smash.active) {
       var t = (performance.now() - smash.t0) / 1000;
-      if (t > 2.45 && t < 3.2) dim = 0.16;
+      if (t > 1.75 && t < 2.45) dim = 0.16;
     }
     if (dim > 0.01) {
       fx.fillStyle = "rgba(5,8,14," + dim + ")";
@@ -557,7 +572,40 @@
     ty = e.clientY - 36;
     wake();
   }
+  function chosenLink(node) {
+    if (!node || !node.closest) return null;
+    if (node.closest("[data-tg-ignore], #tg-audio, .veer-fab, .veer-panel, input, textarea, select")) return null;
+    var a = node.closest("a[href]");
+    if (!a || a.closest("[data-tg-ignore], .veer-fab, .veer-panel")) return null;
+    var href = a.getAttribute("href") || "";
+    if (!href || href === "#" || href.indexOf("javascript:") === 0) return null;
+    return a;
+  }
+
+  function markChoice(el) {
+    clearMark();
+    if (!el) return;
+    smash.mark = { el: el, outline: el.style.outline, offset: el.style.outlineOffset };
+    el.style.outline = "2px solid #0e7490";
+    el.style.outlineOffset = "3px";
+  }
+
   function onClick(e) {
+    if (e.defaultPrevented) return;
+    if (e.button && e.button !== 0) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = chosenLink(e.target);
+    if (a) {
+      e.preventDefault();
+      var box = a.getBoundingClientRect();
+      smash.go = a.href;
+      smash.blank = a.target === "_blank";
+      markChoice(a);
+      startSmash(box.left + box.width * 0.5, box.top + Math.min(box.height * 0.45, 52));
+      return;
+    }
+    smash.go = "";
+    smash.blank = false;
     if (!isSmashMode()) return;
     if (ignoreTarget(e.target)) return;
     startSmash(e.clientX, e.clientY);
