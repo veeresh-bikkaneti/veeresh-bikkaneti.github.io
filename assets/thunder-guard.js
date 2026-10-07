@@ -1,7 +1,6 @@
-/* Thunder guard — original cursor mascot.
-   Desktop: he flies after the pointer.
-   Phone (coarse pointer, no hover): each tap is an entrance, a shake, and a strike.
-   Sounds are synthesized. Nothing is fetched except the two pictures next to this file. */
+/* Storm guard. He leans on the hero banner and waits.
+   Now and then he flies a lap and comes back to that lean.
+   A chosen link: he flies in, faces it, hammers it, then the page loads. */
 (function () {
   if (window.__thunderGuard) {
     try { window.__thunderGuard.destroy(); } catch (e) { /* replace a hot reload */ }
@@ -15,20 +14,27 @@
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var FLY_W = 124;
   var SMASH_W = 210;
+  var STAND_W = 148;
 
   var poses = {
     fly: { img: new Image(), aspect: 560 / 379 },
-    smash: { img: new Image(), aspect: 593 / 640 }
+    smash: { img: new Image(), aspect: 593 / 640 },
+    stand: { img: new Image(), aspect: 1102 / 1700 }
   };
   poses.fly.img.decoding = "async";
   poses.smash.img.decoding = "async";
+  poses.stand.img.decoding = "async";
   poses.fly.img.src = asset("thunder-fly.webp");
   poses.smash.img.src = asset("thunder-smash.webp");
+  poses.stand.img.src = asset("thunder-stand.webp");
   poses.fly.img.onload = function () {
     if (poses.fly.img.naturalHeight) poses.fly.aspect = poses.fly.img.naturalWidth / poses.fly.img.naturalHeight;
   };
   poses.smash.img.onload = function () {
     if (poses.smash.img.naturalHeight) poses.smash.aspect = poses.smash.img.naturalWidth / poses.smash.img.naturalHeight;
+  };
+  poses.stand.img.onload = function () {
+    if (poses.stand.img.naturalHeight) poses.stand.aspect = poses.stand.img.naturalWidth / poses.stand.img.naturalHeight;
   };
 
   var style = document.createElement("style");
@@ -229,11 +235,51 @@
   var lastWhoosh = 0;
   var poseName = "";
 
-  function park() {
-    tx = window.innerWidth * 0.82;
-    ty = Math.min(window.innerHeight * 0.78, window.innerHeight - 140);
+  var rest = { mode: "stand", nextLap: 0, lapT: 0 };
+
+  function standAnchor() {
+    var el = document.querySelector(".hero h1") || document.querySelector(".hero") || document.querySelector("header");
+    var r = el ? el.getBoundingClientRect() : { left: 16, top: 96, right: 280, bottom: 220, width: 264, height: 124 };
+    var x = r.right + 28;
+    var y = r.top + r.height * 0.62;
+    if (x > window.innerWidth - 64) {
+      x = Math.max(64, window.innerWidth - 72);
+      y = Math.min(window.innerHeight - 90, r.bottom + 8);
+    }
+    return { x: x, y: y, face: 1 };
   }
-  park();
+
+  function stepStand(now) {
+    if (!rest.nextLap) rest.nextLap = now + 6000;
+    if (!reduceMotion && now > rest.nextLap) {
+      rest.mode = "lap";
+      rest.lapT = now;
+      if (audioUnlocked && !muted && audioCtx) playWhoosh(audioCtx.currentTime, 0.045);
+      return;
+    }
+    var a = standAnchor();
+    face = a.face;
+    var breathe = reduceMotion ? 0 : Math.sin(now / 980) * 1.8;
+    var glance = reduceMotion ? 0 : Math.sin(now / 1600) * 2.4;
+    place("stand", a.x, a.y + breathe, Math.min(STAND_W, window.innerWidth * 0.38), a.face * 6 + glance, 1, 1);
+  }
+
+  function stepLap(now) {
+    var t = (now - rest.lapT) / 4600;
+    var a = standAnchor();
+    if (t >= 1) {
+      rest.mode = "stand";
+      rest.nextLap = now + 18000 + Math.random() * 10000;
+      stepStand(now);
+      return;
+    }
+    var ang = t * Math.PI * 2;
+    var rx = Math.min(180, window.innerWidth * 0.22);
+    var ry = Math.min(72, window.innerHeight * 0.1);
+    face = Math.cos(ang) > 0 ? -1 : 1;
+    var fade = t < 0.08 ? t / 0.08 : t > 0.9 ? (1 - t) / 0.1 : 1;
+    place("fly", a.x + Math.cos(ang) * rx, a.y - 30 + Math.sin(ang) * ry, FLY_W, 0, fade, 1);
+  }
 
   var smash = {
     active: false,
@@ -330,6 +376,7 @@
   }
 
   function startSmash(x, y) {
+    rest.mode = "stand";
     ensureCanvas();
     var ac = unlockAudio();
     smash.active = true;
@@ -471,8 +518,6 @@
     canvas.style.width = window.innerWidth + "px";
     canvas.style.height = window.innerHeight + "px";
     fx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    park();
-    if (!seenPointer && !isSmashMode()) hideHero();
   }
   resize();
 
@@ -545,15 +590,9 @@
     var dt = clamp(now - last, 0, 34);
     last = now;
     if (smash.active) stepSmash(now);
-    else if (!isSmashMode()) stepFollow(dt, now);
-    else hideHero();
-    drawFx(dt);
-    var idle = !smash.active && isSmashMode() && !particles.length && !bolts.length && !shocks.length && flash <= 0;
-    if (idle) {
-      raf = 0;
-      if (fx) fx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      return;
-    }
+    else if (rest.mode === "lap") stepLap(now);
+    else stepStand(now);
+    if (fx) drawFx(dt);
     raf = requestAnimationFrame(loop);
   }
   function wake() {
@@ -562,7 +601,7 @@
       raf = requestAnimationFrame(loop);
     }
   }
-  if (!isSmashMode()) wake();
+  wake();
 
   function onMove(e) {
     if (e.pointerType && e.pointerType !== "mouse" && e.pointerType !== "pen") return;
