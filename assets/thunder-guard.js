@@ -49,9 +49,16 @@
   ].join("");
   document.head.appendChild(style);
 
-  var canvas = document.createElement("canvas");
-  canvas.id = "tg-fx";
-  var fx = canvas.getContext("2d");
+  var canvas = null;
+  var fx = null;
+  function ensureCanvas() {
+    if (canvas) return;
+    canvas = document.createElement("canvas");
+    canvas.id = "tg-fx";
+    fx = canvas.getContext("2d");
+    document.body.insertBefore(canvas, hero);
+    resize();
+  }
   var hero = document.createElement("img");
   hero.id = "tg-hero";
   hero.alt = "";
@@ -62,7 +69,6 @@
   btn.id = "tg-audio";
   btn.type = "button";
   btn.setAttribute("data-tg-ignore", "");
-  document.body.appendChild(canvas);
   document.body.appendChild(hero);
   document.body.appendChild(btn);
 
@@ -312,6 +318,7 @@
   }
 
   function startSmash(x, y) {
+    ensureCanvas();
     var ac = unlockAudio();
     smash.active = true;
     smash.t0 = performance.now();
@@ -440,6 +447,7 @@
   }
 
   function resize() {
+    if (!canvas || !fx) return;
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     canvas.width = Math.max(1, Math.floor(window.innerWidth * dpr));
     canvas.height = Math.max(1, Math.floor(window.innerHeight * dpr));
@@ -452,6 +460,7 @@
   resize();
 
   function drawFx(dt) {
+    if (!fx) return;
     fx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     var dim = 0;
     if (smash.active) {
@@ -525,7 +534,7 @@
     var idle = !smash.active && isSmashMode() && !particles.length && !bolts.length && !shocks.length && flash <= 0;
     if (idle) {
       raf = 0;
-      fx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      if (fx) fx.clearRect(0, 0, window.innerWidth, window.innerHeight);
       return;
     }
     raf = requestAnimationFrame(loop);
@@ -585,7 +594,7 @@
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVis);
       style.remove();
-      canvas.remove();
+      if (canvas) canvas.remove();
       hero.remove();
       btn.remove();
       document.documentElement.classList.remove("tg-shake");
