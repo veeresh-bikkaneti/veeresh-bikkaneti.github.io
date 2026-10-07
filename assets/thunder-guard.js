@@ -13,8 +13,8 @@
   };
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var FLY_W = 168;
-  var SMASH_W = 248;
+  var FLY_W = 124;
+  var SMASH_W = 210;
 
   var poses = {
     fly: { img: new Image(), aspect: 560 / 379 },
@@ -36,15 +36,16 @@
     "#tg-fx,#tg-hero{position:fixed;left:0;top:0;pointer-events:none;z-index:70}",
     "#tg-fx{width:100%;height:100%;z-index:69}",
     "#tg-hero{transform-origin:center center;will-change:transform;filter:drop-shadow(0 14px 16px rgba(0,0,0,.35))}",
-    "#tg-audio{position:fixed;z-index:90;left:max(1rem,env(safe-area-inset-left));bottom:max(1rem,env(safe-area-inset-bottom));",
-    "width:2.75rem;height:2.75rem;display:grid;place-items:center;border-radius:999px;cursor:pointer;",
-    "color:#f4ecdf;background:rgba(18,14,10,.78);border:1px solid rgba(201,133,58,.85);",
-    "box-shadow:inset 0 0 0 1px rgba(255,220,160,.18),0 8px 20px rgba(0,0,0,.28);backdrop-filter:blur(8px)}",
-    "#tg-audio svg{width:1.15rem;height:1.15rem}",
-    "#tg-audio[data-muted='1']{color:#8d8376;border-color:rgba(141,131,118,.6)}",
+    "#tg-audio{position:fixed;z-index:74;left:max(0.75rem,env(safe-area-inset-left));bottom:max(0.75rem,env(safe-area-inset-bottom));",
+    "width:2.25rem;height:2.25rem;display:grid;place-items:center;border-radius:999px;cursor:pointer;opacity:.72;",
+    "color:#0f1b26;background:rgba(255,255,255,.9);border:1px solid #dbe3ea;",
+    "box-shadow:0 4px 14px rgba(15,27,38,.12)}",
+    "#tg-audio:hover,#tg-audio:focus-visible{opacity:1}",
+    "#tg-audio svg{width:1rem;height:1rem}",
+    "#tg-audio[data-muted='1']{color:#4a5968;opacity:.55}",
     "@media (prefers-reduced-motion: reduce){html.tg-shake body{animation:none !important}}",
-    "@keyframes tg-shake{0%{transform:translate(0,0)}15%{transform:translate(-8px,5px)}30%{transform:translate(9px,-4px)}45%{transform:translate(-6px,-3px)}60%{transform:translate(6px,3px)}75%{transform:translate(-3px,2px)}100%{transform:translate(0,0)}}",
-    "html.tg-shake body{animation:tg-shake .42s linear}"
+    "@keyframes tg-shake{0%{transform:translate(0,0)}20%{transform:translate(-4px,2px)}40%{transform:translate(5px,-2px)}60%{transform:translate(-3px,-1px)}80%{transform:translate(2px,1px)}100%{transform:translate(0,0)}}",
+    "html.tg-shake body{animation:tg-shake .28s linear}"
   ].join("");
   document.head.appendChild(style);
 
@@ -169,6 +170,11 @@
     tone(when, 52, 0.7, 0.26, "sine", 36);
     noiseBurst(when, 0.75, { type: "lowpass", freq: 260, q: 0.7, peak: 0.18, sweepTo: 70 });
   }
+  function playRattle(when) {
+    tone(when, 720, 0.05, 0.045, "square", 410);
+    tone(when + 0.08, 540, 0.05, 0.035, "square", 320);
+    tone(when + 0.15, 860, 0.04, 0.03, "triangle", 480);
+  }
   function playHit(when) {
     var partials = [118, 176, 263, 397, 610, 890];
     for (var i = 0; i < partials.length; i++) {
@@ -195,8 +201,8 @@
     return !!node.closest("[data-tg-ignore], .veer-fab, .veer-panel, input, textarea, select, button");
   }
 
-  var cx = 0;
-  var cy = 0;
+  var cx = -200;
+  var cy = 40;
   var vx = 0;
   var vy = 0;
   var tx = 0;
@@ -208,12 +214,8 @@
   var poseName = "";
 
   function park() {
-    tx = window.innerWidth * 0.78;
-    ty = Math.min(window.innerHeight * 0.72, window.innerHeight - 120);
-    if (!seenPointer) {
-      cx = tx;
-      cy = ty;
-    }
+    tx = window.innerWidth * 0.82;
+    ty = Math.min(window.innerHeight * 0.78, window.innerHeight - 140);
   }
   park();
 
@@ -316,6 +318,7 @@
     smash.x = x;
     smash.y = y;
     smash.hit = false;
+    smash.rattled = false;
     smash.face = x < window.innerWidth * 0.5 ? -1 : 1;
     face = smash.face;
     smash.fromX = smash.face === 1 ? -190 : window.innerWidth + 190;
@@ -369,46 +372,52 @@
       return;
     }
 
-    if (t < 0.62) {
-      var u = easeOut(t / 0.62);
+    if (t < 0.55) {
+      var u = easeOut(t / 0.55);
       var px = quad(smash.fromX, smash.ctrlX, hit.x, u);
-      var py = quad(smash.fromY, smash.ctrlY, hit.y - 40, u);
-      place("fly", px, py, fw, lerp(smash.face * -20, smash.face * 8, u), 1, lerp(0.42, 1, u));
-    } else if (t < 1.0) {
-      var s = (t - 0.62) / 0.38;
-      var jx = Math.sin(s * 48) * (1 - s * 0.25) * 8;
-      var jy = Math.cos(s * 36) * 5;
-      place("fly", hit.x + jx, hit.y - 40 + jy, fw, Math.sin(s * 32) * 8, 1, 1.05);
-    } else if (t < 1.18) {
-      var d = easeIn((t - 1.0) / 0.18);
-      place("smash", hit.x, lerp(hit.y - 40, hit.y, d), sw, lerp(0, smash.face * 8, d), 1, lerp(1.02, 1.14, d));
-    } else if (t < 1.9) {
+      var py = quad(smash.fromY, smash.ctrlY, hit.y - 36, u);
+      place("fly", px, py, fw, lerp(smash.face * -18, smash.face * 6, u), 1, lerp(0.55, 1, u));
+    } else if (t < 0.92) {
+      var s = (t - 0.55) / 0.37;
+      if (!smash.rattled) {
+        smash.rattled = true;
+        if (audioUnlocked && !muted && audioCtx) playRattle(audioCtx.currentTime);
+      }
+      var jx = Math.sin(s * 46) * (1 - s * 0.15) * 7;
+      var jy = Math.cos(s * 34) * 4;
+      place("fly", hit.x + jx, hit.y - 36 + jy, fw, Math.sin(s * 30) * 7, 1, 1.04);
+    } else if (t < 1.08) {
+      var d = easeIn((t - 0.92) / 0.16);
+      place("smash", hit.x, lerp(hit.y - 36, hit.y, d), sw, lerp(0, smash.face * 6, d), 1, lerp(1.02, 1.12, d));
+    } else if (t < 1.55) {
       if (!smash.hit) {
         smash.hit = true;
         burst(smash.x, smash.y);
         if (audioUnlocked && !muted && audioCtx) playHit(audioCtx.currentTime + 0.005);
-        if (audioUnlocked && !muted) playWhoosh((audioCtx ? audioCtx.currentTime : 0) + 0.01, 0.12);
       }
-      var h = (t - 1.18) / 0.72;
+      var h = (t - 1.08) / 0.47;
       place(
         "smash",
-        hit.x + Math.sin(h * 42) * (1 - h) * 6,
-        hit.y + Math.sin(h * 28) * (1 - h) * 3,
+        hit.x + Math.sin(h * 36) * (1 - h) * 4,
+        hit.y,
         sw,
-        smash.face * 6 * (1 - h),
+        smash.face * 4 * (1 - h),
         1,
-        lerp(1.14, 1, Math.min(1, h * 3))
+        lerp(1.12, 1, Math.min(1, h * 3))
       );
-    } else if (t < 2.4) {
-      var out = (t - 1.9) / 0.5;
-      place("smash", hit.x, hit.y - out * 110, sw, -smash.face * 14 * out, 1 - out, 1);
+    } else if (t < 1.95) {
+      var out = (t - 1.55) / 0.4;
+      place("smash", hit.x + smash.face * out * 70, hit.y - out * 80, sw, -smash.face * 10 * out, 1 - out, 1);
     } else {
       endSmash();
     }
   }
 
   function stepFollow(dt, now) {
-    if (!seenPointer) park();
+    if (!seenPointer) {
+      hideHero();
+      return;
+    }
     var pull = 1 - Math.exp(-dt / 70);
     vx += (tx - cx) * 0.018 * (dt / 16);
     vy += (ty - cy) * 0.018 * (dt / 16);
@@ -423,8 +432,8 @@
     bank += (targetBank - bank) * (1 - Math.exp(-dt / 90));
     var bob = reduceMotion ? 0 : Math.sin(now / 320) * 3.2;
     var speed = Math.hypot(vx, vy);
-    if (!reduceMotion && audioUnlocked && !muted && speed > 7 && now - lastWhoosh > 900 && audioCtx) {
-      playWhoosh(audioCtx.currentTime, 0.06);
+    if (!reduceMotion && audioUnlocked && !muted && speed > 14 && now - lastWhoosh > 2400 && audioCtx) {
+      playWhoosh(audioCtx.currentTime, 0.03);
       lastWhoosh = now;
     }
     place("fly", cx, cy + bob, Math.min(FLY_W, window.innerWidth * 0.42), reduceMotion ? 0 : bank, 1, 1);
@@ -437,7 +446,8 @@
     canvas.style.width = window.innerWidth + "px";
     canvas.style.height = window.innerHeight + "px";
     fx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (!seenPointer) park();
+    park();
+    if (!seenPointer && !isSmashMode()) hideHero();
   }
   resize();
 
@@ -446,9 +456,7 @@
     var dim = 0;
     if (smash.active) {
       var t = (performance.now() - smash.t0) / 1000;
-      if (t < 0.18) dim = (t / 0.18) * 0.42;
-      else if (t > 1.95) dim = Math.max(0, (2.4 - t) / 0.45) * 0.42;
-      else dim = 0.42;
+      if (t > 0.95 && t < 1.28) dim = 0.14;
     }
     if (dim > 0.01) {
       fx.fillStyle = "rgba(5,8,14," + dim + ")";
