@@ -44,8 +44,8 @@
     "#tg-audio svg{width:1rem;height:1rem}",
     "#tg-audio[data-muted='1']{color:#4a5968;opacity:.55}",
     "@media (prefers-reduced-motion: reduce){html.tg-shake body{animation:none !important}}",
-    "@keyframes tg-shake{0%{transform:translate(0,0)}20%{transform:translate(-4px,2px)}40%{transform:translate(5px,-2px)}60%{transform:translate(-3px,-1px)}80%{transform:translate(2px,1px)}100%{transform:translate(0,0)}}",
-    "html.tg-shake body{animation:tg-shake .28s linear}"
+    "@keyframes tg-shake{0%{transform:translate(0,0)}15%{transform:translate(-6px,3px)}30%{transform:translate(7px,-3px)}45%{transform:translate(-5px,-2px)}60%{transform:translate(4px,2px)}80%{transform:translate(-2px,1px)}100%{transform:translate(0,0)}}",
+    "html.tg-shake body{animation:tg-shake .72s ease-out}"
   ].join("");
   document.head.appendChild(style);
 
@@ -264,37 +264,37 @@
       seg(m, b, depth - 1, j * 0.55);
     }
     seg({ x: x1, y: y1 }, { x: x2, y: y2 }, 5, jag || 70);
-    return { pts: pts, life: 0.24, max: 0.24 };
+    return { pts: pts, life: 0.85, max: 0.85 };
   }
 
   function burst(x, y) {
     var colors = ["#f7fbff", "#9ad7ff", "#e8b15a", "#ffffff"];
     for (var i = 0; i < 56; i++) {
       var a = Math.random() * Math.PI * 2;
-      var s = 1.5 + Math.random() * 8.5;
+      var s = 0.7 + Math.random() * 3.4;
       particles.push({
         x: x, y: y,
         vx: Math.cos(a) * s,
         vy: Math.sin(a) * s - 2.2,
-        life: 0.35 + Math.random() * 0.4,
-        max: 0.75,
+        life: 0.9 + Math.random() * 0.8,
+        max: 1.7,
         r: 1.2 + Math.random() * 2.4,
         color: colors[i % colors.length]
       });
     }
-    shocks.push({ x: x, y: y, life: 0.55, max: 0.55 });
-    shocks.push({ x: x, y: y, life: 0.4, max: 0.4, delay: 0.08 });
+    shocks.push({ x: x, y: y, life: 1.15, max: 1.15 });
+    shocks.push({ x: x, y: y, life: 0.85, max: 0.85 });
     bolts.push(makeBolt(x + (Math.random() * 120 - 60), -20, x, y, 90));
     bolts.push(makeBolt(x - 40, -10, x + 16, y - 8, 60));
     bolts.push(makeBolt(x + 30, 0, x - 10, y + 6, 50));
-    flash = 0.18;
+    flash = 0.42;
     if (!reduceMotion) {
       document.documentElement.classList.remove("tg-shake");
       void document.documentElement.offsetWidth;
       document.documentElement.classList.add("tg-shake");
       window.setTimeout(function () {
         document.documentElement.classList.remove("tg-shake");
-      }, 460);
+      }, 780);
     }
   }
 
@@ -340,8 +340,7 @@
         playHit(t0 + 0.06);
       } else {
         playCrack(t0);
-        playWhoosh(t0 + 0.03, 0.28);
-        playRumble(t0 + 0.58);
+        playWhoosh(t0 + 0.04, 0.22);
       }
     }
     wake();
@@ -379,42 +378,45 @@
       return;
     }
 
-    if (t < 0.55) {
-      var u = easeOut(t / 0.55);
+    if (t < 1.15) {
+      var u = easeOut(t / 1.15);
       var px = quad(smash.fromX, smash.ctrlX, hit.x, u);
-      var py = quad(smash.fromY, smash.ctrlY, hit.y - 36, u);
-      place("fly", px, py, fw, lerp(smash.face * -18, smash.face * 6, u), 1, lerp(0.55, 1, u));
-    } else if (t < 0.92) {
-      var s = (t - 0.55) / 0.37;
+      var py = quad(smash.fromY, smash.ctrlY, hit.y - 48, u);
+      place("fly", px, py, fw, lerp(smash.face * -16, smash.face * 5, u), 1, lerp(0.62, 1, u));
+    } else if (t < 2.05) {
+      var s = (t - 1.15) / 0.9;
       if (!smash.rattled) {
         smash.rattled = true;
-        if (audioUnlocked && !muted && audioCtx) playRattle(audioCtx.currentTime);
+        if (audioUnlocked && !muted && audioCtx) {
+          playRattle(audioCtx.currentTime);
+          playRumble(audioCtx.currentTime + 0.05);
+        }
       }
-      var jx = Math.sin(s * 46) * (1 - s * 0.15) * 7;
-      var jy = Math.cos(s * 34) * 4;
-      place("fly", hit.x + jx, hit.y - 36 + jy, fw, Math.sin(s * 30) * 7, 1, 1.04);
-    } else if (t < 1.08) {
-      var d = easeIn((t - 0.92) / 0.16);
-      place("smash", hit.x, lerp(hit.y - 36, hit.y, d), sw, lerp(0, smash.face * 6, d), 1, lerp(1.02, 1.12, d));
-    } else if (t < 1.55) {
+      var jx = Math.sin(s * 18) * (1 - s * 0.2) * 8;
+      var jy = Math.cos(s * 14) * 5;
+      place("fly", hit.x + jx, hit.y - 48 + jy, fw, Math.sin(s * 12) * 6, 1, 1.06);
+    } else if (t < 2.55) {
+      var d = easeIn((t - 2.05) / 0.5);
+      place("smash", hit.x, lerp(hit.y - 48, hit.y, d), sw, lerp(0, smash.face * 7, d), 1, lerp(1.04, 1.16, d));
+    } else if (t < 3.7) {
       if (!smash.hit) {
         smash.hit = true;
         burst(smash.x, smash.y);
-        if (audioUnlocked && !muted && audioCtx) playHit(audioCtx.currentTime + 0.005);
+        if (audioUnlocked && !muted && audioCtx) playHit(audioCtx.currentTime + 0.01);
       }
-      var h = (t - 1.08) / 0.47;
+      var h = (t - 2.55) / 1.15;
       place(
         "smash",
-        hit.x + Math.sin(h * 36) * (1 - h) * 4,
+        hit.x + Math.sin(h * 10) * (1 - h) * 3,
         hit.y,
         sw,
-        smash.face * 4 * (1 - h),
+        smash.face * 3 * (1 - h),
         1,
-        lerp(1.12, 1, Math.min(1, h * 3))
+        lerp(1.16, 1.04, Math.min(1, h * 1.4))
       );
-    } else if (t < 1.95) {
-      var out = (t - 1.55) / 0.4;
-      place("smash", hit.x + smash.face * out * 70, hit.y - out * 80, sw, -smash.face * 10 * out, 1 - out, 1);
+    } else if (t < 4.45) {
+      var out = (t - 3.7) / 0.75;
+      place("smash", hit.x + smash.face * out * 90, hit.y - out * 70, sw, -smash.face * 8 * out, 1 - out, 1);
     } else {
       endSmash();
     }
@@ -465,7 +467,7 @@
     var dim = 0;
     if (smash.active) {
       var t = (performance.now() - smash.t0) / 1000;
-      if (t > 0.95 && t < 1.28) dim = 0.14;
+      if (t > 2.45 && t < 3.2) dim = 0.16;
     }
     if (dim > 0.01) {
       fx.fillStyle = "rgba(5,8,14," + dim + ")";
