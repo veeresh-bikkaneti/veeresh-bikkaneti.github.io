@@ -1,7 +1,7 @@
 /* Thunder Guard — rework per 9-expert office-hours review (feat/thunder-guard-rework).
    Explicit state machine:
      STAND -> FOLLOW -> FLY_LAP -> IDLE_JAZZ -> SMASH_WINDUP -> SMASH_IMPACT -> SMASH_RECOVER -> (FOLLOW|STAND)
-   Follow-the-cursor is wired (was dead code). Click = hammer raise + Stormbreaker smash.
+   Follow-the-cursor is wired (was dead code). Click = hammer raise + hammer smash.
    Idle 2s/8s/20s -> tiered "jazz" antics. All art + audio original (inspired-by only). */
 (function () {
   "use strict";
@@ -14,7 +14,7 @@
     return scriptSrc ? new URL(name, scriptSrc).href : "assets/" + name;
   };
 
-  /* ---------- frozen tunables (review §2: one CONFIG, no magic numbers) ---------- */
+  /* ---------- central tunables (review §2; P1-20: "no magic numbers" claim corrected — full literal migration deferred, risk > value) ---------- */
   var CONFIG = Object.freeze({
     sizeVar: Object.freeze({ fly: "--tg-fly", stand: "--tg-stand", smash: "--tg-smash", clip: "--tg-clip" }),
     sizeFallback: Object.freeze({ fly: 104, stand: 128, smash: 190, clip: 260 }),
@@ -63,6 +63,7 @@
   };
 
   /* ---------- DOM ---------- */
+  /* P1-27: drop-shadow cost accepted — one composited <img>; bake into sprites on next re-export. */
   var style = document.createElement("style");
   style.textContent = [
     ":root{--tg-fly:104px;--tg-stand:128px;--tg-smash:190px;--tg-clip:260px}",
@@ -83,9 +84,9 @@
     "#tg-audio svg{width:1.1rem;height:1.1rem}",
     "#tg-audio[aria-pressed='true']{color:#4a5968;opacity:.55}",
     ".tg-visually-hidden{position:fixed !important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
-    "@media (prefers-reduced-motion: reduce){html.tg-shake body{animation:none !important}}",
+    "@media (prefers-reduced-motion: reduce){#tg-fx.tg-shake{animation:none !important}}",
     "@keyframes tg-shake{0%{transform:translate(0,0)}20%{transform:translate(-5px,2px)}40%{transform:translate(5px,-2px)}60%{transform:translate(-3px,-1px)}80%{transform:translate(2px,1px)}100%{transform:translate(0,0)}}",
-    "html.tg-shake body{animation:tg-shake .45s ease-out}"
+    "#tg-fx.tg-shake{animation:tg-shake .45s ease-out}"
   ].join("");
   document.head.appendChild(style);
 
@@ -119,6 +120,7 @@
   var liveEl = document.createElement("div");
   liveEl.className = "tg-visually-hidden";
   liveEl.setAttribute("aria-live", "polite");
+  liveEl.setAttribute("aria-atomic", "true"); // P1-19
   document.body.appendChild(liveEl);
 
   var btn = document.createElement("button");
@@ -129,6 +131,15 @@
 
   var muted = false;
   try { muted = localStorage.getItem("tg-muted") === "1"; } catch (e) { muted = false; }
+
+  // P1-17: calm mode — returning visitors (4+ visits) get relaxed laps/jazz
+  var visits = 0;
+  try {
+    visits = parseInt(localStorage.getItem("tg-visits") || "0", 10) || 0;
+    visits += 1;
+    localStorage.setItem("tg-visits", String(visits));
+  } catch (e) { visits = 0; }
+  var calmMode = visits >= 4;
 
   function boltIcon(off) {
     return '<svg viewBox="0 0 24 24" aria-hidden="true">' +
@@ -142,7 +153,13 @@
     btn.innerHTML = boltIcon(muted);
   }
   paintBtn();
-  function announce(msg) { liveEl.textContent = ""; liveEl.textContent = msg; }
+  var announceTimer = 0;
+  // P1-19: defer the set ~40ms so AT doesn't coalesce rapid clear+set pairs
+  function announce(msg) {
+    if (announceTimer) window.clearTimeout(announceTimer);
+    liveEl.textContent = "";
+    announceTimer = window.setTimeout(function () { liveEl.textContent = msg; }, 40);
+  }
 
   /* ---------- audio: synth storm kit, compressor, voice gate, idle bus ---------- */
   var audioCtx = null;
@@ -158,7 +175,9 @@
     var AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
     if (!audioCtx) {
-      audioCtx = new AC({ latencyHint: "interactive" });
+      try {
+        audioCtx = new AC({ latencyHint: "interactive" });
+      } catch (e) { return null; } // P0-3: construction throws past ~6 contexts (Chromium) / locked-down Safari
       master = audioCtx.createGain();
       master.gain.value = muted ? 0 : 0.70; // P0: 0.85 -> 0.70
       comp = audioCtx.createDynamicsCompressor(); // P0: tames clipping
@@ -186,7 +205,9 @@
       var data = noiseBuf.getChannelData(0);
       for (var i = 0; i < n; i++) data[i] = Math.random() * 2 - 1;
     }
-    if (audioCtx.state === "suspended") audioCtx.resume();
+    if (audioCtx.state === "suspended") {
+      try { var rp = audioCtx.resume(); if (rp && rp.catch) rp.catch(function () {}); } catch (e) { /* noop */ }
+    }
     audioUnlocked = true;
     return audioCtx;
   }
@@ -206,7 +227,8 @@
     setMuted(!muted);
   });
 
-  // voice gate: cap simultaneous synth voices; idle audio is shed first
+  // voice gate: idle audio is shed at 8 voices; hard cap 14 (P1-25: spec amended —
+  // "max 8" was never a hard max; priorities keep smash/thunder audible under load)
   function voiceEnter(kind) {
     if (!audioCtx || muted) return false;
     if (voices >= 8 && (VOICE_PRI[kind] || 2) <= VOICE_PRI.idle) return false;
@@ -394,7 +416,7 @@
       gx = s.tx + s.face * F.offX;
       gy = s.ty + F.offY;
     } else { gx = s.cx; gy = s.cy; }
-    if (now - s.stillT > F.stillMs) { // Lissajous drift when cursor is still
+    if (!reduceMotion && now - s.stillT > F.stillMs) { // Lissajous drift when cursor is still (P1-5: gated under reduced motion)
       var ph = (now - s.stillT) / 1000 * F.driftHz * Math.PI * 2;
       gx += Math.cos(ph) * F.driftAmp;
       gy += Math.sin(ph * 1.3) * F.driftAmp * 0.6;
@@ -406,7 +428,7 @@
     var sp = Math.sqrt(s.vx * s.vx + s.vy * s.vy);
     var vmax = F.vmax * n;
     if (sp > vmax) { s.vx *= vmax / sp; s.vy *= vmax / sp; }
-    s.cx += s.vx * n; s.cy += s.vy * n;
+    s.cx += s.vx; s.cy += s.vy; // P1-6: clamp already carries n; the extra *n made displacement scale n^2
     if (s.vx > F.flipThresh && now - s.faceT > F.flipDebounce) { s.face = 1; s.faceT = now; }
     else if (s.vx < -F.flipThresh && now - s.faceT > F.flipDebounce) { s.face = -1; s.faceT = now; }
     var tb = clamp(s.vy * F.bankK, -F.bankMax, F.bankMax);
@@ -432,6 +454,15 @@
     }
     y = clamp(y, 64, window.innerHeight - 80); // universal vertical clamp
     return { x: x, y: y, face: 1 };
+  }
+  // P1-18: anchor re-queried at most twice/sec (was: querySelector + getBoundingClientRect every frame)
+  var anchorCache = { x: 0, y: 0, face: 1, t: -1e9 };
+  function anchorCached(now) {
+    if (now - anchorCache.t > 500) {
+      var a = anchorCalc();
+      anchorCache.x = a.x; anchorCache.y = a.y; anchorCache.face = a.face; anchorCache.t = now;
+    }
+    return anchorCache;
   }
 
   /* pure: map elapsed seconds onto a smash timeline */
@@ -512,22 +543,26 @@
     wake();
   }
 
+  // P1-7: shake only the FX canvas layer — shaking <body> re-parents every
+  // position:fixed descendant (mascot, mute button, site fab/panel) by the scroll offset
   function shakeScreen() {
-    if (reduceMotion) return;
-    document.documentElement.classList.remove("tg-shake");
-    void document.documentElement.offsetWidth;
-    document.documentElement.classList.add("tg-shake");
-    window.setTimeout(function () { document.documentElement.classList.remove("tg-shake"); }, CONFIG.smash.shakeMs + 60);
+    if (reduceMotion || !canvas) return;
+    canvas.classList.remove("tg-shake");
+    void canvas.offsetWidth;
+    canvas.classList.add("tg-shake");
+    window.setTimeout(function () { canvas.classList.remove("tg-shake"); }, CONFIG.smash.shakeMs + 60);
   }
 
+  var hitStopUntil = 0;
   // single impact helper — kills the 3 duplicated hit blocks (review §2)
   function onImpact(x, y, tier, opts) {
     opts = opts || {};
+    hitStopUntil = performance.now() + 55; // P1-9: 55ms hit-stop sells the impact
     burst(x, y, tier);
     if (tier === "full" && audioUnlocked && !muted && audioCtx) {
       var t = audioCtx.currentTime + 0.01;
       playBoom(t);
-      playBlast(t + 0.18);
+      playBlast(t + 0.03); // P1-9: was +180ms, read as a second event
       playThunder(t + 0.38);
     }
     if (tier === "full" && opts.shake && !reduceMotion) shakeScreen();
@@ -616,6 +651,8 @@
     fx.globalAlpha = 1;
   }
 
+  // P1-18: skip redundant style writes — rounded key dedupes static frames
+  var lastPlaceKey = "";
   function place(name, x, y, w, rot, alpha, scale) {
     var pose = poses[name];
     var h = w / pose.aspect;
@@ -625,10 +662,15 @@
       poseName = name;
       if (hero.src !== pose.img.src) hero.src = pose.img.src;
     }
-    hero.style.width = dw + "px";
-    hero.style.height = dh + "px";
-    hero.style.opacity = String(alpha);
-    hero.style.transform = "translate3d(" + (x - dw / 2) + "px," + (y - dh / 2) + "px,0) rotate(" + rot + "deg) scaleX(" + face + ")";
+    var r2 = function (v) { return Math.round(v * 2) / 2; };
+    var key = name + "|" + r2(x - dw / 2) + "|" + r2(y - dh / 2) + "|" + r2(dw) + "|" + r2(dh) + "|" +
+      (Math.round(rot * 10) / 10) + "|" + (Math.round(alpha * 100) / 100) + "|" + face;
+    if (key === lastPlaceKey) return;
+    lastPlaceKey = key;
+    hero.style.width = r2(dw) + "px";
+    hero.style.height = r2(dh) + "px";
+    hero.style.opacity = String(Math.round(alpha * 100) / 100);
+    hero.style.transform = "translate3d(" + r2(x - dw / 2) + "px," + r2(y - dh / 2) + "px,0) rotate(" + (Math.round(rot * 10) / 10) + "deg) scaleX(" + face + ")";
   }
   function hideHero() { hero.style.opacity = "0"; }
 
@@ -681,9 +723,9 @@
     copyTimer = window.setTimeout(function () { copyEl.style.opacity = "0"; }, 4000);
   }
 
-  function jazzBasePos() {
+  function jazzBasePos(now) {
     if (jazz.returnTo === ST.FOLLOW) return { x: fol.cx, y: fol.cy, face: fol.face };
-    var a = anchorCalc();
+    var a = anchorCached(now);
     return { x: a.x, y: a.y, face: a.face };
   }
 
@@ -691,6 +733,7 @@
     if (reduceMotion || !budgetOk()) { jazz.tierFired[tier - 1] = true; return; }
     var def = pickAntic(tier, now);
     if (!def) { jazz.tierFired[tier - 1] = true; return; }
+    ensureCanvas(); // P1-8: jazz bolts/flash need the FX layer or they're invisible + defeat rAF sleep
     jazz.tierFired[tier - 1] = true;
     jazz.lastAntic = def.id;
     jazz.lastPlayed[def.id] = now;
@@ -698,7 +741,7 @@
     jazz.cur = { def: def, t0: now, struck: false, snapped: 0, tier: tier };
     setState(ST.IDLE_JAZZ);
     budgetSpend();
-    var base = jazzBasePos();
+    var base = jazzBasePos(now);
     if (def.audio === "twirl" && audioUnlocked && !muted && audioCtx) playTwirl(audioCtx.currentTime + 0.01);
     if (def.audio === "cape" && audioUnlocked && !muted && audioCtx) playCapeSnap(audioCtx.currentTime + 0.01);
     if (def.audio === "thud" && audioUnlocked && !muted && audioCtx) playThud(audioCtx.currentTime + 0.35);
@@ -721,9 +764,13 @@
   function checkJazz(now) {
     if (state !== ST.STAND && state !== ST.FOLLOW) return;
     if (document.hidden) return;
+    var ae = null;
+    try { ae = document.activeElement; } catch (e) { /* noop */ }
+    if (ae && ae.tagName && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return; // P1-15: never jazz over a focused form
     var idle = now - lastActive;
     var tiers = [CONFIG.jazz.t1, CONFIG.jazz.t2, CONFIG.jazz.t3];
     for (var i = 0; i < 3; i++) {
+      if (calmMode && i === 2) continue; // P1-17: calm visitors skip the tier-3 showpiece
       if (!jazz.tierFired[i] && idle >= tiers[i]) { startJazz(i + 1, now); return; }
     }
   }
@@ -733,7 +780,7 @@
     if (!j) { endJazz(); return; }
     var u = (now - j.t0) / j.def.dur;
     if (u >= 1) { endJazz(); return; }
-    var base = jazzBasePos();
+    var base = jazzBasePos(now);
     face = base.face;
     var w = sizes.stand;
     var env = Math.sin(Math.min(1, u) * Math.PI);
@@ -756,10 +803,12 @@
         }
         break;
       }
-      case "survey":
-        face = u < 0.5 ? base.face : -base.face;
-        place("stand", base.x, base.y, w, -12 + 24 * u, 1, 1);
+      case "survey": { // P1-23: flip at 1/3 and 2/3 with dwells, tilt +/-4deg (was: midpoint flip, +/-12deg teleport)
+        var seg = u < 1 / 3 ? 0 : u < 2 / 3 ? 1 : 2;
+        face = seg === 1 ? -base.face : base.face;
+        place("stand", base.x, base.y, w, seg === 0 ? -4 : seg === 2 ? 4 : 0, 1, 1);
         break;
+      }
       case "cape":
         place("stand", base.x, base.y, w, Math.sin(u * Math.PI * 2) * 3, 1, 1 + 0.06 * env);
         break;
@@ -787,14 +836,16 @@
   var lap = { next: 0, t0: 0, dur: 0, cx: 0, cy: 0, rx: 0, ry: 0, flourish: false };
   function checkLap(now) {
     if (state !== ST.STAND && state !== ST.FOLLOW) return;
+    if (reduceMotion) return; // P1-5: no auto-laps under reduced motion
     if (document.hidden || !budgetOk()) { lap.next = now + 15000; return; }
-    if (!lap.next) lap.next = now + (state === ST.STAND ? rand(25000, 40000) : rand(45000, 75000));
+    var calmK = calmMode ? 2 : 1; // P1-17: calm visitors get half the laps
+    if (!lap.next) lap.next = now + (state === ST.STAND ? rand(25000, 40000) : rand(45000, 75000)) * calmK;
     if (now < lap.next) return;
     if (now - lastScrollT < 4000) { lap.next = now + 8000; return; } // suppressed while user scrolled
     lap.t0 = now;
     lap.flourish = state === ST.FOLLOW;
     lap.dur = lap.flourish ? 1800 : 3200;
-    var c = lap.flourish ? { x: fol.cx, y: fol.cy } : anchorCalc();
+    var c = lap.flourish ? { x: fol.cx, y: fol.cy } : anchorCached(now);
     lap.cx = c.x; lap.cy = c.y;
     lap.rx = Math.min(180, window.innerWidth * 0.22);
     lap.ry = Math.min(72, window.innerHeight * 0.1);
@@ -807,7 +858,7 @@
   function stepLap(now) {
     var t = (now - lap.t0) / lap.dur;
     if (t >= 1) {
-      lap.next = now + (lap.flourish ? rand(45000, 75000) : rand(25000, 40000));
+      lap.next = now + (lap.flourish ? rand(45000, 75000) : rand(25000, 40000)) * (calmMode ? 2 : 1);
       setState(seenPointer && !shouldSmashMode() ? ST.FOLLOW : ST.STAND);
       return;
     }
@@ -847,21 +898,26 @@
     opts = opts || {};
     var nowMs = performance.now();
     if (isSmashState()) return false;
-    if (nowMs < smash.throttleUntil) { // sparkle-only throttle
-      burst(x, y, "sparkle");
-      return false;
-    }
-    // spam economy: >3 taps/2s -> sparkle-only + 3s throttle
-    tapTimes.push(nowMs);
-    tapTimes = tapTimes.filter(function (t) { return nowMs - t < CONFIG.smash.spamWindowMs; });
+    if (jazz.cur) endJazz(); // P1-13: a smash interrupts any playing antic
+    lap.next = 0; // P1-13: reschedule laps after the smash instead of firing immediately
+    var useEconomy = opts.economy !== false; // P0-1: link smashes are exempt from the tap economy
     var tier = "full";
-    if (tapTimes.length > CONFIG.smash.spamCount) {
-      tier = "sparkle";
-      smash.throttleUntil = nowMs + CONFIG.smash.throttleMs;
-      burst(x, y, "sparkle");
-      return false;
-    } else if (nowMs < smash.cooldownUntil) {
-      tier = "dim"; // diminished FX: 28 particles, no shake, no audio
+    if (useEconomy) {
+      if (nowMs < smash.throttleUntil) { // sparkle-only throttle
+        burst(x, y, "sparkle");
+        return false;
+      }
+      // spam economy: >3 taps/2s -> sparkle-only + 3s throttle
+      tapTimes.push(nowMs);
+      tapTimes = tapTimes.filter(function (t) { return nowMs - t < CONFIG.smash.spamWindowMs; });
+      if (tapTimes.length > CONFIG.smash.spamCount) {
+        tier = "sparkle";
+        smash.throttleUntil = nowMs + CONFIG.smash.throttleMs;
+        burst(x, y, "sparkle");
+        return false;
+      } else if (nowMs < smash.cooldownUntil) {
+        tier = "dim"; // diminished FX: 28 particles, no shake, no audio
+      }
     }
     lazyPose("smash", "thunder-smash.webp");
     lazyPose("fly", "thunder-fly.webp");
@@ -884,6 +940,7 @@
       if (smash.tl.phases[pi][0] === "impact") { smash.impactIdx = pi; break; }
     }
     smash.fxTier = tier;
+    smash.impactDrawn = false; smash.gathered = false; // P1-9/P1-10/P1-11
     smash.face = x < window.innerWidth * 0.5 ? -1 : 1;
     face = smash.face;
     smash.fromX = fol.cx > -100 && seenPointer ? fol.cx : (smash.face === 1 ? -190 : window.innerWidth + 190);
@@ -905,8 +962,8 @@
         playing.catch(function () { smash.useClip = false; clip.style.opacity = "0"; });
       }
     }
-    if (audioUnlocked && !muted && audioCtx && !smash.useClip && tier === "full") {
-      playWhoosh(audioCtx.currentTime + 0.01, 0.16);
+    if (audioUnlocked && !muted && audioCtx && !smash.useClip && tier === "full" && !reduceMotion) {
+      playWhoosh(audioCtx.currentTime + 0.01, 0.16); // P1-5: whoosh gated under reduced motion
     }
     smash.gapSinceLast = nowMs - lastSmashAt;
     lastSmashAt = nowMs;
@@ -917,7 +974,7 @@
 
   function placeClip() {
     var aspect = clip.videoWidth && clip.videoHeight ? clip.videoWidth / clip.videoHeight : 400 / 608;
-    var w = sizes.clip;
+    var w = sizes.smash; // P1-26: match the sprite smash size so clip<->sprite swaps don't pop
     var h = w / aspect;
     clip.style.width = w + "px";
     clip.style.height = h + "px";
@@ -969,6 +1026,18 @@
     var fw = sizes.fly;
     face = smash.face;
     if (ph.phase === "done") { endSmash(); return; }
+    if (reduceMotion && !smash.useClip) {
+      // P1-5: reduced motion jumps straight to the impact pose + audio (no swoop/windup)
+      face = smash.face;
+      if (!smash.hit) {
+        smash.hit = true;
+        setState(ST.SMASH_IMPACT);
+        onImpact(smash.x, smash.y, smash.fxTier, { shake: false });
+      }
+      placeHammer(smash.x, smash.y, sw, 1, 0, 1);
+      if (t > 0.7) endSmash();
+      return;
+    }
     // robust impact: fires when crossing into/past the impact phase even if a
     // long frame skipped the 90ms window (matters on janky/older devices)
     if (!smash.hit && ph.index >= smash.impactIdx) {
@@ -991,23 +1060,45 @@
       setState(ST.SMASH_WINDUP);
       var d = easeIn(ph.local);
       placeHammer(smash.x, smash.y - 86 * (1 - d), sw, lerp(0.96, 1.04, d), smash.face * 2 * (1 - d), 1);
+      if (!smash.gathered && !reduceMotion) {
+        // P1-10: lightning-gather beat — Thor calls the storm before the strike
+        smash.gathered = true;
+        ensureCanvas();
+        var gx = smash.x, gy = smash.y - 60;
+        bolts.push(makeBolt(gx - 90, -20, gx - 8, gy, 60));
+        bolts.push(makeBolt(gx + 90, -20, gx + 8, gy, 60));
+        if (audioUnlocked && !muted && audioCtx) {
+          noiseBurst(audioCtx.currentTime + 0.01, 0.3,
+            { type: "bandpass", freq: 900, q: 2, peak: 0.10, sweepTo: 2600 }, "whoosh");
+        }
+        wake();
+      }
       return;
     }
     if (ph.phase === "impact") {
       setState(ST.SMASH_IMPACT); // hit already fired above (or fires here on first sample)
+      smash.impactDrawn = true; // P1-11
       var press = ph.local < 0.3 ? Math.sin((ph.local / 0.3) * Math.PI) * 5 : 0;
-      placeHammer(smash.x, smash.y + press, sw, 1.04, 0, 1);
+      // P1-9: squash->1.12 overshoot pop sells the hit
+      var pop = ph.local < 0.5 ? lerp(0.94, 1.12, easeOut(ph.local / 0.5)) : lerp(1.12, 1.0, (ph.local - 0.5) / 0.5);
+      placeHammer(smash.x, smash.y + press, sw, pop, 0, 1);
       return;
     }
     // settle / recover
     setState(ST.SMASH_RECOVER);
+    if (!smash.impactDrawn) {
+      // P1-11: a low-fps sample skipped the impact window — draw the money frame once
+      smash.impactDrawn = true;
+      placeHammer(smash.x, smash.y, sw, 1.12, 0, 1);
+      return;
+    }
     var h = ph.local;
     placeHammer(smash.x, smash.y, sw, lerp(1.04, 1, Math.min(1, h * 2)), 0, 1);
   }
 
   /* ---------- stand ---------- */
   function stepStand(now) {
-    var a = anchorCalc();
+    var a = anchorCached(now);
     face = a.face;
     var breathe = reduceMotion ? 0 : Math.sin(now / 980) * 1.8;
     var glance = reduceMotion ? 0 : Math.sin(now / 1600) * 2.4;
@@ -1042,6 +1133,11 @@
   function loop(now) {
     var dt = clamp(now - last, 0, 34);
     last = now;
+    if (now < hitStopUntil) { // P1-9: hit-stop — freeze the action for 55ms on impact
+      if (fx) drawFx(0);
+      if (raf) raf = requestAnimationFrame(loop);
+      return;
+    }
     if (isSmashState()) stepSmash(now);
     else if (state === ST.FLY_LAP) stepLap(now);
     else if (state === ST.IDLE_JAZZ) stepJazz(now);
@@ -1100,6 +1196,7 @@
   }
   function noteActive() {
     lastActive = performance.now();
+    if (jazz.cur) endJazz(); // P1-13: fresh input cancels a playing antic
     jazz.tierFired = [false, false, false];
     wake();
   }
@@ -1108,20 +1205,25 @@
   function onMove(e) {
     if (e.pointerType && e.pointerType !== "mouse" && e.pointerType !== "pen") return;
     noteActive();
-    var px = e.clientX - 28, py = e.clientY - 36;
+    var px = e.clientX, py = e.clientY; // P1-16: CONFIG.follow.offX/offY own the offset now
     if (Math.abs(px - fol.tx) > 4 || Math.abs(py - fol.ty) > 4) fol.stillT = performance.now();
     fol.tx = px; fol.ty = py;
     if (!seenPointer) {
       seenPointer = true;
       fol.cx = px; fol.cy = py;
-      if (!shouldSmashMode() && !isSmashState()) setState(ST.FOLLOW); // P0: follow wired
+      if (!shouldSmashMode() && !isSmashState()) {
+        lazyPose("fly", "thunder-fly.webp"); // P0-2: follow needs the fly sprite on entry
+        setState(ST.FOLLOW);
+      }
     } else if (!shouldSmashMode() && !isSmashState() && state === ST.STAND) {
+      lazyPose("fly", "thunder-fly.webp"); // P0-2
       setState(ST.FOLLOW);
     }
   }
   function onKey() { noteActive(); }
   function onScroll() {
     lastScrollT = performance.now();
+    anchorCache.t = -1e9; // P1-18: anchor depends on scroll position
     noteActive();
   }
   var downPos = null;
@@ -1170,7 +1272,11 @@
       if (now - lastScrollT < 350 || tapMoved(e)) return;
     }
     noteActive();
-    if (isSmashState()) return; // P0: re-entrancy guard (also fixes the go-wipe bug)
+    if (isSmashState()) {
+      // P1-24: a second click during a link-smash skips the delay and navigates now
+      if (smash.link && smash.go) endSmash();
+      return;
+    }
     var a = chosenLink(e.target);
     // same-page '#' anchor (or other link chosenLink declines): plain click, never smash
     if (!a && e.target && e.target.closest && e.target.closest("a[href]")) return;
@@ -1182,25 +1288,43 @@
       var url = a.href;
       announce("Opening " + linkText(a));
       if (blank) {
-        // Safari blocks delayed window.open — fire synchronously in the click handler
+        // P0-4: preventDefault BEFORE window.open — the browser default would open a second tab.
+        // Fired synchronously in the click handler (Safari blocks delayed window.open).
+        e.preventDefault();
         try { window.open(url, "_blank", "noopener"); } catch (err) { /* blocked */ }
         startSmash(ax, ay, { link: false });
         return;
       }
-      e.preventDefault();
       markChoice(a);
-      startSmash(ax, ay, { link: true, go: url, blank: false });
+      // P0-1: only hijack navigation when the smash actually starts; link smashes are
+      // exempt from the tap economy, so a throttle can never strand a click
+      if (startSmash(ax, ay, { link: true, go: url, blank: false, economy: false })) {
+        e.preventDefault();
+      } else {
+        clearMark(); // startSmash refused — navigate natively instead of stranding the click
+      }
       return;
     }
     if (ignoreTarget(e.target)) return;
+    // P1-12: drags and text selections are not smashes
+    if (downPos) {
+      var mdx = e.clientX - downPos.x, mdy = e.clientY - downPos.y;
+      if (Math.sqrt(mdx * mdx + mdy * mdy) > 10) return;
+    }
+    try {
+      var sel = window.getSelection && window.getSelection();
+      if (sel && sel.toString().length > 0) return;
+    } catch (serr) { /* noop */ }
     startSmash(e.clientX, e.clientY, { link: false }); // P0: desktop clicks are live input now
   }
 
-  function onResize() { readSizes(); resizeFx(); noteActive(); }
+  function onResize() { readSizes(); resizeFx(); anchorCache.t = -1e9; noteActive(); } // P1-18: anchor depends on viewport
   function onVis() {
     if (document.visibilityState === "visible") {
       noteActive();
-      if (audioCtx && audioCtx.state === "suspended" && audioUnlocked) audioCtx.resume();
+      if (audioCtx && audioCtx.state === "suspended" && audioUnlocked) {
+        try { var vr = audioCtx.resume(); if (vr && vr.catch) vr.catch(function () {}); } catch (e) { /* noop */ }
+      }
     } else if (raf) { cancelAnimationFrame(raf); raf = 0; } // hidden tab: full sleep
   }
   function onClipFail() { // P0 watchdog: error path can no longer strand the mascot
@@ -1229,11 +1353,23 @@
     else if (colorMql.addListener) colorMql.addListener(colorHandler);
   } catch (e) { /* older browsers */ }
 
+  // P1-5: reduceMotion is live, not boot-only
+  var rmMql = null;
+  var rmHandler = function (e) { reduceMotion = !!(e && e.matches); };
+  try {
+    rmMql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (rmMql.addEventListener) rmMql.addEventListener("change", rmHandler);
+    else if (rmMql.addListener) rmMql.addListener(rmHandler);
+  } catch (e) { /* older browsers */ }
+
+  // P1-21: pause/on/setConfig explicitly deferred — fire-and-forget mascot on a static
+  // page; setMode/getState/_internals cover the needed surface. Revisit if embedded elsewhere.
   var api = {
     smash: function (x, y) {
       return startSmash(typeof x === "number" ? x : window.innerWidth * 0.5, typeof y === "number" ? y : window.innerHeight * 0.45, { link: false });
     },
     setMode: function (mode) {
+      if (jazz.cur) endJazz(); // P1-13: mode switch orphans a playing antic otherwise
       if (mode) document.documentElement.dataset.thunderMode = mode;
       else delete document.documentElement.dataset.thunderMode;
       if (!shouldSmashMode() && seenPointer && !isSmashState()) setState(ST.FOLLOW);
@@ -1261,15 +1397,22 @@
           else if (colorMql.removeListener) colorMql.removeListener(colorHandler);
         }
       } catch (e) { /* noop */ }
+      try {
+        if (rmMql) {
+          if (rmMql.removeEventListener) rmMql.removeEventListener("change", rmHandler);
+          else if (rmMql.removeListener) rmMql.removeListener(rmHandler);
+        }
+      } catch (e) { /* noop */ }
       try { if (audioCtx && audioCtx.close) audioCtx.close(); } catch (e) { /* noop */ }
       style.remove();
       if (canvas) canvas.remove();
       hero.remove();
+      clearMark(); // P1-22: don't leave a stuck 2px outline after teardown/hot-reload
+      try { clip.pause(); } catch (e) { /* noop */ }
       clip.remove();
       copyEl.remove();
       liveEl.remove();
       btn.remove();
-      document.documentElement.classList.remove("tg-shake");
       if (window.__thunderGuard === api) delete window.__thunderGuard;
       if (window.ThunderGuard === api) delete window.ThunderGuard;
     },
@@ -1284,7 +1427,9 @@
       chosenLink: chosenLink,
       sizes: function () { return sizes; },
       fxCounts: function () { return { particles: particles.length, bolts: bolts.length, shocks: shocks.length }; },
-      noteActive: noteActive
+      noteActive: noteActive,
+      // test hook: seed the spam counter to reproduce the throttle path deterministically
+      _testSpam: function () { var n = performance.now(); for (var i = 0; i < 4; i++) tapTimes.push(n); }
     }
   };
   window.__thunderGuard = api;
