@@ -212,24 +212,26 @@ function run() {
       "idle 2.2s: tier-1 jazz fires (state=" + sb.api.getState() + ")");
   }
 
-  // 5. tap smash -> impact FX counts, then completes
+  // 5. REG hyperlink-only: plain tap is not a smash (idle reset only)
   {
     const sb = makeSandbox();
     sb.fireDoc("click", sb.clickEvent(sb.makeDiv(), 400, 300));
-    ok(/SMASH/.test(sb.api.getState()), "tap: enters smash (state=" + sb.api.getState() + ")");
-    for (let i = 0; i < 14; i++) { sb.advance(50); sb.step(); } // 700ms, past impact
+    ok(!/SMASH/.test(sb.api.getState()),
+      "hyperlink-only: tap starts no smash (state=" + sb.api.getState() + ")");
     const c = sb.api._internals.fxCounts();
-    ok(c.particles === 56, "tap smash: 56 particles (got " + c.particles + ")");
-    ok(c.shocks === 2, "tap smash: 2 shockwaves (got " + c.shocks + ")");
-    ok(c.bolts >= 2, "tap smash: bolts present (got " + c.bolts + ")");
-    for (let i = 0; i < 40; i++) { sb.advance(50); sb.step(); } // to ~2.7s
-    ok(!/SMASH/.test(sb.api.getState()), "tap smash: completes (state=" + sb.api.getState() + ")");
+    ok(c.particles === 0 && c.bolts === 0 && c.shocks === 0,
+      "hyperlink-only: tap produces no FX");
+    for (let i = 0; i < 5; i++) sb.fireDoc("click", sb.clickEvent(sb.makeDiv(), 400, 300));
+    ok(!/SMASH/.test(sb.api.getState()),
+      "hyperlink-only: repeated taps start no smash (state=" + sb.api.getState() + ")");
   }
 
   // 6. re-entrancy guard
   {
     const sb = makeSandbox();
-    sb.fireDoc("click", sb.clickEvent(sb.makeDiv(), 400, 300));
+    const a = sb.makeLink("https://example.com/page", "");
+    sb.fireDoc("click", sb.clickEvent(a, 150, 110));
+    ok(/SMASH/.test(sb.api.getState()), "re-entrancy: link smash in progress");
     ok(sb.api.smash(100, 100) === false, "re-entrancy: api.smash during smash returns false");
   }
 
@@ -268,8 +270,10 @@ function run() {
   {
     const sb = makeSandbox();
     sb.api._internals._testSpam(); // 4 taps inside the 2s window
-    sb.fireDoc("click", sb.clickEvent(sb.makeDiv(), 400, 300)); // 5th tap -> throttle, sparkle-only
-    ok(!/SMASH/.test(sb.api.getState()), "P0-1: throttled tap is sparkle-only, no smash");
+    sb.fireDoc("click", sb.clickEvent(sb.makeDiv(), 400, 300)); // non-link click: no smash at all now
+    ok(!/SMASH/.test(sb.api.getState()), "P0-1: non-link click never smashes");
+    const c = sb.api._internals.fxCounts();
+    ok(c.particles === 0 && c.bolts === 0 && c.shocks === 0, "P0-1: non-link click produces no FX");
     const a = sb.makeLink("https://example.com/page", "");
     const ev = sb.clickEvent(a, 150, 110);
     sb.fireDoc("click", ev); // link smashes are exempt from the tap economy
@@ -309,13 +313,14 @@ function run() {
       "P1-5: no auto-laps under reduced motion (state=" + sb.api.getState() + ")");
   }
 
-  // 14. reduced motion: smash completes without throwing
+  // 14. reduced motion: link smash completes without throwing
   {
     const sb = makeSandbox({ matchMedia: { "(prefers-reduced-motion: reduce)": true } });
+    const a = sb.makeLink("https://example.com/page", "");
     let threw = null;
     try {
-      sb.fireDoc("click", sb.clickEvent(sb.makeDiv(), 400, 300));
-      for (let i = 0; i < 20; i++) { sb.advance(50); sb.step(); }
+      sb.fireDoc("click", sb.clickEvent(a, 150, 110));
+      for (let i = 0; i < 20; i++) { sb.advance(50); sb.step(); } // 1s > 0.7s reduced-motion smash
     } catch (e) { threw = e; }
     ok(!threw, "P1-5: reduced-motion smash doesn't throw" + (threw ? " (" + threw.message + ")" : ""));
     ok(!/SMASH/.test(sb.api.getState()),
@@ -438,6 +443,57 @@ function run() {
     const hero = sb.created.find(e => e.id === "tg-hero");
     ok(String(hero.src).indexOf("thunder-summon") !== -1,
       "summon: hero shows summon sprite during gather (got " + hero.src + ")");
+  }
+
+  // 26. REG: non-link click never starts a smash (hyperlink-only)
+  {
+    const sb = makeSandbox();
+    sb.fireDoc("click", sb.clickEvent(sb.makeDiv(), 400, 300));
+    ok(!/SMASH/.test(sb.api.getState()),
+      "hyperlink-only: non-link click starts no smash (state=" + sb.api.getState() + ")");
+    const c = sb.api._internals.fxCounts();
+    ok(c.particles === 0 && c.bolts === 0 && c.shocks === 0,
+      "hyperlink-only: non-link click produces no FX");
+  }
+
+  // 27. REG: link click still smashes
+  {
+    const sb = makeSandbox();
+    const a = sb.makeLink("https://example.com/page", "");
+    sb.fireDoc("click", sb.clickEvent(a, 150, 110));
+    ok(/SMASH/.test(sb.api.getState()),
+      "hyperlink-only: link click still smashes (state=" + sb.api.getState() + ")");
+  }
+
+  // 28. REG: chatbot panel open -> Thor rests at perch, ignores cursor follow
+  {
+    const sb = makeSandbox();
+    sb.api._internals._testChat(true);
+    ok(sb.api._internals.isResting(), "chat-rest: resting flag set");
+    ok(sb.api.getState() === "REST",
+      "chat-rest: state is REST (state=" + sb.api.getState() + ")");
+    sb.fireWin("pointermove", { clientX: 600, clientY: 400, pointerType: "mouse" });
+    for (let i = 0; i < 20; i++) { sb.advance(50); sb.step(); } // 1s: glide to perch
+    ok(sb.api.getState() === "REST",
+      "chat-rest: cursor follow ignored while resting (state=" + sb.api.getState() + ")");
+    const rp = sb.api._internals.restPos();
+    const pd = Math.sqrt((rp.x - 1192) * (rp.x - 1192) + (rp.y - 96) * (rp.y - 96));
+    ok(pd < 24, "chat-rest: glided to top-right perch (dist=" + pd.toFixed(1) + "px)");
+    ok(sb.api._internals.jazzAntic() === null, "chat-rest: no jazz antics while resting");
+  }
+
+  // 29. REG: chatbot panel close -> normal state machine resumes
+  {
+    const sb = makeSandbox();
+    sb.api._internals._testChat(true);
+    ok(sb.api.getState() === "REST", "chat-rest: resting before close");
+    sb.api._internals._testChat(false);
+    ok(!sb.api._internals.isResting(), "chat-rest: resting flag cleared");
+    ok(sb.api.getState() === "STAND",
+      "chat-rest: back to STAND (state=" + sb.api.getState() + ")");
+    sb.fireWin("pointermove", { clientX: 600, clientY: 400, pointerType: "mouse" });
+    ok(sb.api.getState() === "FOLLOW",
+      "chat-rest: cursor follow resumes after close (state=" + sb.api.getState() + ")");
   }
 
   console.log("\n" + passed + " passed, " + failed + " failed");

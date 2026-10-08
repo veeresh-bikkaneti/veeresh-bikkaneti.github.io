@@ -403,10 +403,52 @@
   readSizes();
 
   /* ---------- explicit state machine ---------- */
-  var ST = { STAND: "STAND", FOLLOW: "FOLLOW", FLY_LAP: "FLY_LAP", IDLE_JAZZ: "IDLE_JAZZ", SMASH_WINDUP: "SMASH_WINDUP", SMASH_IMPACT: "SMASH_IMPACT", SMASH_RECOVER: "SMASH_RECOVER" };
+  var ST = { STAND: "STAND", FOLLOW: "FOLLOW", FLY_LAP: "FLY_LAP", IDLE_JAZZ: "IDLE_JAZZ", SMASH_WINDUP: "SMASH_WINDUP", SMASH_IMPACT: "SMASH_IMPACT", SMASH_RECOVER: "SMASH_RECOVER", REST: "REST" };
   var state = ST.STAND;
   function setState(s) { state = s; }
   function isSmashState() { return state === ST.SMASH_WINDUP || state === ST.SMASH_IMPACT || state === ST.SMASH_RECOVER; }
+
+  /* ---------- chatbot rest mode: Thor perches top-right while #veer-panel is open ---------- */
+  var resting = false;
+  var rest = { cx: 0, cy: 0 };
+  function restPerch() { return { x: Math.max(64, window.innerWidth - 88), y: 96 }; }
+  function veerPanel() { return (document.getElementById && document.getElementById("veer-panel")) || null; }
+  function chatOpen() { var p = veerPanel(); return !!(p && !p.hidden); }
+  function setResting(on) {
+    if (on === resting) return;
+    resting = on;
+    if (on) {
+      if (jazz.cur) endJazz(); // don't leave an antic playing under the rest state
+      lap.next = performance.now() + 30000; // reschedule laps so none fires the moment rest ends
+      var c = (state === ST.FOLLOW) ? { x: fol.cx, y: fol.cy } : anchorCached(performance.now());
+      rest.cx = c.x; rest.cy = c.y;
+      if (reduceMotion) { var p0 = restPerch(); rest.cx = p0.x; rest.cy = p0.y; } // teleport, no glide
+      if (!isSmashState()) setState(ST.REST);
+      // mid-smash: endSmash routes back to REST once the smash completes
+      wake();
+    } else {
+      if (state === ST.REST) setState(ST.STAND);
+      noteActive();
+    }
+  }
+  function stepRest(now, dt) {
+    var p = restPerch();
+    var dx = p.x - rest.cx, dy = p.y - rest.cy;
+    var d = Math.sqrt(dx * dx + dy * dy);
+    if (reduceMotion) { rest.cx = p.x; rest.cy = p.y; }
+    else if (d > 0.5) {
+      var k = 1 - Math.exp(-dt / 180); // smooth glide to the perch
+      rest.cx += dx * k; rest.cy += dy * k;
+    }
+    if (dx > 2) face = 1; else if (dx < -2) face = -1;
+    if (d > 8) {
+      lazyPose("fly", "thunder-fly.webp");
+      place("fly", rest.cx, rest.cy, sizes.fly, 0, 1, 1); // traveling: fly pose
+    } else {
+      var breathe = reduceMotion ? 0 : Math.sin(now / 980) * 1.8;
+      place("stand", p.x, p.y + breathe, sizes.stand, 0, 1, 1); // perched: stand + breathe
+    }
+  }
 
   var seenPointer = false;
   var lastActive = performance.now();
@@ -1055,7 +1097,8 @@
     hideHero();
     clearMark();
     smash.cooldownUntil = performance.now() + CONFIG.smash.cooldownMs;
-    setState(seenPointer && !shouldSmashMode() ? ST.FOLLOW : ST.STAND);
+    // link smashes still work while resting: route back to the perch afterwards
+    setState(resting ? ST.REST : (seenPointer && !shouldSmashMode() ? ST.FOLLOW : ST.STAND));
     if (!url) return;
     if (blank) { try { window.open(url, "_blank", "noopener"); } catch (e) { /* blocked */ } }
     else { try { window.location.assign(url); } catch (e) { /* noop */ } }
@@ -1204,6 +1247,7 @@
     if (isSmashState()) stepSmash(now);
     else if (state === ST.FLY_LAP) stepLap(now);
     else if (state === ST.IDLE_JAZZ) stepJazz(now);
+    else if (state === ST.REST) stepRest(now, dt); // chatbot rest mode: no follow, laps, or jazz
     else if (state === ST.FOLLOW) {
       followStep(fol, dt, now);
       face = fol.face;
@@ -1274,7 +1318,7 @@
     if (!seenPointer) {
       seenPointer = true;
       fol.cx = px; fol.cy = py;
-      if (!shouldSmashMode() && !isSmashState()) {
+      if (!shouldSmashMode() && !isSmashState() && !resting) {
         lazyPose("fly", "thunder-fly.webp"); // P0-2: follow needs the fly sprite on entry
         setState(ST.FOLLOW);
       }
@@ -1321,10 +1365,6 @@
     el.style.outline = "2px solid var(--accent, #0e7490)";
     el.style.outlineOffset = "3px";
   }
-  function ignoreTarget(node) {
-    if (!node || !node.closest) return false;
-    return !!node.closest("[data-tg-ignore], .veer-fab, .veer-panel, input, textarea, select, button");
-  }
 
   function onClick(e) {
     if (e.defaultPrevented) return;
@@ -1368,17 +1408,9 @@
       }
       return;
     }
-    if (ignoreTarget(e.target)) return;
-    // P1-12: drags and text selections are not smashes
-    if (downPos) {
-      var mdx = e.clientX - downPos.x, mdy = e.clientY - downPos.y;
-      if (Math.sqrt(mdx * mdx + mdy * mdy) > 10) return;
-    }
-    try {
-      var sel = window.getSelection && window.getSelection();
-      if (sel && sel.toString().length > 0) return;
-    } catch (serr) { /* noop */ }
-    startSmash(e.clientX, e.clientY, { link: false }); // P0: desktop clicks are live input now
+    // Hyperlink-only smash: a non-link click only resets idle (noteActive, called
+    // above) and returns. Thor no longer smashes on plain taps/clicks.
+    return;
   }
 
   function onResize() { readSizes(); resizeFx(); anchorCache.t = -1e9; noteActive(); } // P1-18: anchor depends on viewport
@@ -1425,6 +1457,16 @@
     else if (rmMql.addListener) rmMql.addListener(rmHandler);
   } catch (e) { /* older browsers */ }
 
+  /* chatbot rest mode: Thor perches top-right while the Ask Veer panel (#veer-panel) is open */
+  var chatObs = null;
+  function syncRest() { setResting(chatOpen()); }
+  try {
+    chatObs = new MutationObserver(function () { syncRest(); });
+    // subtree:true catches the panel even if the chatbot script injects it late
+    chatObs.observe(document.documentElement, { attributes: true, subtree: true, attributeFilter: ["hidden"] });
+  } catch (e) { /* older browsers */ }
+  syncRest(); // initial check
+
   // P1-21: pause/on/setConfig explicitly deferred — fire-and-forget mascot on a static
   // page; setMode/getState/_internals cover the needed surface. Revisit if embedded elsewhere.
   var api = {
@@ -1454,6 +1496,7 @@
       document.removeEventListener("visibilitychange", onVis);
       clip.removeEventListener("error", onClipFail);
       try { themeObs.disconnect(); } catch (e) { /* noop */ }
+      try { if (chatObs) chatObs.disconnect(); } catch (e) { /* noop */ }
       try {
         if (colorMql) {
           if (colorMql.removeEventListener) colorMql.removeEventListener("change", colorHandler);
@@ -1493,6 +1536,12 @@
       noteActive: noteActive,
       // test hook: current jazz antic id (null when no antic playing)
       jazzAntic: function () { return jazz.cur ? jazz.cur.def.id : null; },
+      // test hook: is the chatbot rest mode active
+      isResting: function () { return resting; },
+      // test hook: current rest glide position
+      restPos: function () { return { x: rest.cx, y: rest.cy }; },
+      // test hook: force rest mode on/off (simulates panel open/close)
+      _testChat: function (open) { setResting(!!open); },
       // test hook: seed the spam counter to reproduce the throttle path deterministically
       _testSpam: function () { var n = performance.now(); for (var i = 0; i < 4; i++) tapTimes.push(n); },
       // test hook: disable auto-laps for deterministic idle-tier tests
