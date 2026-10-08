@@ -427,6 +427,19 @@ function run() {
       "stormfall reduced-motion: never enters IDLE_JAZZ");
   }
 
+  // 25. stormfall: summon sprite (arm raised, axe skyward) shown during gather + peak
+  {
+    const sb = makeSandbox();
+    sb.api._internals._testNoLap();
+    for (let i = 0; i < 122; i++) { sb.advance(250); sb.step(); } // 30.5s: tier-4 fires
+    ok(sb.api._internals.jazzAntic() === "stormfall",
+      "summon: stormfall fired at tier-4");
+    for (let i = 0; i < 13; i++) { sb.advance(50); sb.step(); } // fine steps through the gather
+    const hero = sb.created.find(e => e.id === "tg-hero");
+    ok(String(hero.src).indexOf("thunder-summon") !== -1,
+      "summon: hero shows summon sprite during gather (got " + hero.src + ")");
+  }
+
   console.log("\n" + passed + " passed, " + failed + " failed");
   if (failures.length) console.log("failures:", failures);
   process.exit(failed ? 1 : 0);

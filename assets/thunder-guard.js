@@ -40,11 +40,13 @@
   var poses = {
     fly: { img: new Image(), aspect: 560 / 379 },
     smash: { img: new Image(), aspect: 593 / 640 },
-    stand: { img: new Image(), aspect: 1102 / 1700 }
+    stand: { img: new Image(), aspect: 1102 / 1700 },
+    summon: { img: new Image(), aspect: 1280 / 1984 }
   };
   poses.fly.img.decoding = "async";
   poses.smash.img.decoding = "async";
   poses.stand.img.decoding = "async";
+  poses.summon.img.decoding = "async";
   poses.stand.img.src = asset("thunder-stand.webp");
   function lazyPose(name, file) {
     var im = poses[name].img;
@@ -60,6 +62,9 @@
   };
   poses.stand.img.onload = function () {
     if (poses.stand.img.naturalHeight) poses.stand.aspect = poses.stand.img.naturalWidth / poses.stand.img.naturalHeight;
+  };
+  poses.summon.img.onload = function () {
+    if (poses.summon.img.naturalHeight) poses.summon.aspect = poses.summon.img.naturalWidth / poses.summon.img.naturalHeight;
   };
 
   /* ---------- DOM ---------- */
@@ -755,6 +760,7 @@
     }
     var def = pickAntic(tier, now);
     if (!def) { jazz.tierFired[tier - 1] = true; return; }
+    if (def.id === "stormfall") lazyPose("summon", "thunder-summon.webp");
     ensureCanvas(); // P1-8: jazz bolts/flash need the FX layer or they're invisible + defeat rAF sleep
     jazz.tierFired[tier - 1] = true;
     jazz.lastAntic = def.id;
@@ -853,7 +859,8 @@
         else if (u < PK) rise = 60;
         else { var dt2 = (u - PK) / (1 - PK); rise = 60 * (0.5 + 0.5 * Math.cos(dt2 * Math.PI)); }
         var sy = base.y - rise;
-        place("stand", base.x, sy, w, Math.sin(u * Math.PI) * 2, 1, 1 + 0.03 * env);
+        // summon sprite (arm raised, axe skyward) for gather + peak; stand for the descend
+        place(u < PK ? "summon" : "stand", base.x, sy, w, Math.sin(u * Math.PI) * 2, 1, 1 + 0.03 * env);
         var hx = base.x + face * 14, hy = sy - 96; // hammer-head point, above the raised weapon
         if (u < GU && j.snapped < 6 && u > 0.02 + j.snapped * 0.065) {
           j.snapped++;
