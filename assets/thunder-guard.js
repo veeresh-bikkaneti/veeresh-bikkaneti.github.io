@@ -41,11 +41,12 @@
   style.textContent = [
     "#tg-fx,#tg-hero{position:fixed;left:0;top:0;pointer-events:none;z-index:70}",
     "#tg-fx{width:100%;height:100%;z-index:69}",
-    "#tg-hero{transform-origin:center center;will-change:transform;filter:drop-shadow(0 14px 16px rgba(0,0,0,.35))}",
+    "#tg-hero{transform-origin:center center;will-change:transform;filter:drop-shadow(0 8px 12px rgba(20,40,60,.18))}",
+    "html[data-tg-theme='dark'] #tg-hero{filter:drop-shadow(0 12px 16px rgba(0,0,0,.5))}",
     "#tg-audio{position:fixed;z-index:74;left:max(0.75rem,env(safe-area-inset-left));bottom:max(0.75rem,env(safe-area-inset-bottom));",
     "width:2.25rem;height:2.25rem;display:grid;place-items:center;border-radius:999px;cursor:pointer;opacity:.72;",
-    "color:#0f1b26;background:rgba(255,255,255,.9);border:1px solid #dbe3ea;",
-    "box-shadow:0 4px 14px rgba(15,27,38,.12)}",
+    "color:var(--text,#0f1b26);background:color-mix(in srgb, var(--surface,#fff) 90%, transparent);border:1px solid var(--border,#dbe3ea);",
+    "box-shadow:0 4px 14px color-mix(in srgb, var(--text,#0f1b26) 12%, transparent)}",
     "#tg-audio:hover,#tg-audio:focus-visible{opacity:1}",
     "#tg-audio svg{width:1rem;height:1rem}",
     "#tg-audio[data-muted='1']{color:#4a5968;opacity:.55}",
@@ -281,6 +282,20 @@
     place("fly", a.x + Math.cos(ang) * rx, a.y - 30 + Math.sin(ang) * ry, FLY_W, 0, fade, 1);
   }
 
+  var HAMMER_X = 0.26;
+  var HAMMER_Y = 0.49;
+
+  function isDark() {
+    var t = document.documentElement.dataset.theme;
+    if (t === "dark") return true;
+    if (t === "light") return false;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+
+  function syncTheme() {
+    document.documentElement.dataset.tgTheme = isDark() ? "dark" : "light";
+  }
+
   var smash = {
     active: false,
     t0: 0,
@@ -326,7 +341,9 @@
   }
 
   function burst(x, y) {
-    var colors = ["#f7fbff", "#9ad7ff", "#e8b15a", "#ffffff"];
+    var colors = isDark()
+      ? ["#f4fbff", "#8ecfff", "#e8b15a", "#ffffff"]
+      : ["#0e7490", "#b8860b", "#1e3a5f", "#0f766e"];
     for (var i = 0; i < 56; i++) {
       var a = Math.random() * Math.PI * 2;
       var s = 0.7 + Math.random() * 3.4;
@@ -345,7 +362,7 @@
     bolts.push(makeBolt(x + (Math.random() * 120 - 60), -20, x, y, 90));
     bolts.push(makeBolt(x - 40, -10, x + 16, y - 8, 60));
     bolts.push(makeBolt(x + 30, 0, x - 10, y + 6, 50));
-    flash = 0.42;
+    flash = isDark() ? 0.22 : 0.1;
     if (!reduceMotion) {
       document.documentElement.classList.remove("tg-shake");
       void document.documentElement.offsetWidth;
@@ -369,6 +386,14 @@
     hero.style.height = dh + "px";
     hero.style.opacity = String(alpha);
     hero.style.transform = "translate3d(" + (x - dw / 2) + "px," + (y - dh / 2) + "px,0) rotate(" + rot + "deg) scaleX(" + face + ")";
+  }
+
+  function placeHammer(tx, ty, w, scale, rot, alpha) {
+    var dw = w * scale;
+    var dh = dw / poses.smash.aspect;
+    var cx = tx - smash.face * HAMMER_X * dw;
+    var cy = ty - HAMMER_Y * dh;
+    place("smash", cx, cy, w, rot, alpha, scale);
   }
 
   function hideHero() {
@@ -425,24 +450,14 @@
     else window.location.assign(url);
   }
 
-  function impactCenter(sw, sh) {
-    var hx = 0.2;
-    var hy = 0.26;
-    return {
-      x: smash.x - smash.face * hx * sw,
-      y: smash.y - hy * sh
-    };
-  }
-
   function stepSmash(now) {
     var t = (now - smash.t0) / 1000;
-    var sw = Math.min(SMASH_W, window.innerWidth * 0.72);
-    var fw = Math.min(FLY_W, window.innerWidth * 0.5);
-    var hit = impactCenter(sw, sw / poses.smash.aspect);
+    var sw = Math.min(SMASH_W, window.innerWidth * 0.62);
+    var fw = Math.min(FLY_W, window.innerWidth * 0.42);
     face = smash.face;
 
-    var lookX = smash.x - smash.face * 72;
-    var lookY = smash.y - 64;
+    var lookX = smash.x - smash.face * 86;
+    var lookY = smash.y - 78;
 
     if (reduceMotion) {
       var a = t < 0.08 ? t / 0.08 : 1;
@@ -450,22 +465,22 @@
         smash.hit = true;
         burst(smash.x, smash.y);
       }
-      place("smash", hit.x, hit.y, sw, 0, a, 1);
+      placeHammer(smash.x, smash.y, sw, 1, 0, a);
       if (t > 0.7) endSmash();
       return;
     }
 
-    if (t < 0.85) {
-      var u = easeOut(t / 0.85);
+    if (t < 0.8) {
+      var u = easeOut(t / 0.8);
       var px = quad(smash.fromX, smash.ctrlX, lookX, u);
       var py = quad(smash.fromY, smash.ctrlY, lookY, u);
-      place("fly", px, py, fw, lerp(smash.face * -14, smash.face * 8, u), 1, lerp(0.7, 1, u));
-    } else if (t < 1.4) {
-      var s = (t - 0.85) / 0.55;
-      place("fly", lookX, lookY + Math.sin(s * Math.PI) * 3, fw, smash.face * 10, 1, 1.02);
-    } else if (t < 1.82) {
-      var d = easeIn((t - 1.4) / 0.42);
-      place("smash", lerp(lookX, hit.x, d), lerp(lookY, hit.y, d), sw, lerp(smash.face * 8, smash.face * 4, d), 1, lerp(1.02, 1.14, d));
+      place("fly", px, py, fw, lerp(smash.face * -12, smash.face * 8, u), 1, lerp(0.72, 1, u));
+    } else if (t < 1.25) {
+      var s = (t - 0.8) / 0.45;
+      place("fly", lookX, lookY + Math.sin(s * Math.PI) * 2, fw, smash.face * 8, 1, 1);
+    } else if (t < 1.9) {
+      var d = easeIn((t - 1.25) / 0.65);
+      placeHammer(smash.x, smash.y - 86 * (1 - d), sw, lerp(0.98, 1.04, d), smash.face * 2 * (1 - d), 1);
     } else if (t < 2.7) {
       if (!smash.hit) {
         smash.hit = true;
@@ -477,8 +492,9 @@
           playThunder(now + 0.38);
         }
       }
-      var h = (t - 1.82) / 0.88;
-      place("smash", hit.x, hit.y, sw, smash.face * 2 * (1 - h), 1, lerp(1.14, 1.05, Math.min(1, h)));
+      var h = (t - 1.9) / 0.8;
+      var press = h < 0.2 ? Math.sin((h / 0.2) * Math.PI) * 5 : 0;
+      placeHammer(smash.x, smash.y + press, sw, lerp(1.04, 1, Math.min(1, h * 2)), 0, 1);
     } else {
       endSmash();
     }
@@ -527,16 +543,18 @@
     var dim = 0;
     if (smash.active) {
       var t = (performance.now() - smash.t0) / 1000;
-      if (t > 1.75 && t < 2.45) dim = 0.16;
+      if (t > 1.85 && t < 2.15 && isDark()) dim = 0.1;
     }
     if (dim > 0.01) {
       fx.fillStyle = "rgba(5,8,14," + dim + ")";
       fx.fillRect(0, 0, window.innerWidth, window.innerHeight);
     }
     if (flash > 0) {
-      fx.fillStyle = "rgba(214,236,255," + Math.min(0.85, flash * 4) + ")";
+      var cap = isDark() ? 0.28 : 0.12;
+      var tint = isDark() ? "186,214,255" : "255,255,255";
+      fx.fillStyle = "rgba(" + tint + "," + Math.min(cap, flash * (isDark() ? 1.6 : 0.8)) + ")";
       fx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-      flash = Math.max(0, flash - dt / 1000);
+      flash = Math.max(0, flash - dt / (isDark() ? 900 : 500));
     }
     for (var i = bolts.length - 1; i >= 0; i--) {
       var b = bolts[i];
@@ -546,14 +564,15 @@
       fx.beginPath();
       fx.moveTo(b.pts[0].x, b.pts[0].y);
       for (var p = 1; p < b.pts.length; p++) fx.lineTo(b.pts[p].x, b.pts[p].y);
-      fx.strokeStyle = "rgba(232,246,255," + alpha + ")";
-      fx.lineWidth = 3.2;
-      fx.shadowColor = "rgba(120,200,255,.9)";
-      fx.shadowBlur = 16;
+      var dark = isDark();
+      fx.strokeStyle = dark ? "rgba(210,232,255," + alpha + ")" : "rgba(14,90,140," + alpha + ")";
+      fx.lineWidth = dark ? 3.2 : 2.4;
+      fx.shadowColor = dark ? "rgba(120,200,255,.85)" : "rgba(14,116,144,.45)";
+      fx.shadowBlur = dark ? 16 : 8;
       fx.stroke();
-      fx.lineWidth = 1.2;
+      fx.lineWidth = 1.1;
       fx.shadowBlur = 0;
-      fx.strokeStyle = "rgba(255,255,255," + alpha + ")";
+      fx.strokeStyle = dark ? "rgba(255,255,255," + alpha + ")" : "rgba(186,230,253," + (alpha * 0.7) + ")";
       fx.stroke();
     }
     fx.shadowBlur = 0;
@@ -564,7 +583,8 @@
       var u = 1 - ring.life / ring.max;
       fx.beginPath();
       fx.arc(ring.x, ring.y, 16 + u * 150, 0, Math.PI * 2);
-      fx.strokeStyle = "rgba(180,220,255," + (ring.life / ring.max) * 0.85 + ")";
+      var ringColor = isDark() ? "180,220,255" : "14,116,144";
+      fx.strokeStyle = "rgba(" + ringColor + "," + (ring.life / ring.max) * (isDark() ? 0.8 : 0.55) + ")";
       fx.lineWidth = 3 * (1 - u);
       fx.stroke();
     }
@@ -602,6 +622,11 @@
     }
   }
   wake();
+  syncTheme();
+  new MutationObserver(syncTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  try {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", syncTheme);
+  } catch (e) { /* older browsers */ }
 
   function onMove(e) {
     if (e.pointerType && e.pointerType !== "mouse" && e.pointerType !== "pen") return;
@@ -625,7 +650,7 @@
     clearMark();
     if (!el) return;
     smash.mark = { el: el, outline: el.style.outline, offset: el.style.outlineOffset };
-    el.style.outline = "2px solid #0e7490";
+    el.style.outline = "2px solid var(--accent, #0e7490)";
     el.style.outlineOffset = "3px";
   }
 
