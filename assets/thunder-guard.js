@@ -39,7 +39,7 @@
 
   var style = document.createElement("style");
   style.textContent = [
-    "#tg-fx,#tg-hero{position:fixed;left:0;top:0;pointer-events:none;z-index:70}",
+    "#tg-fx,#tg-hero,#tg-clip{position:fixed;left:0;top:0;pointer-events:none;z-index:70}",
     "#tg-fx{width:100%;height:100%;z-index:69}",
     "#tg-hero{transform-origin:center center;will-change:transform;filter:drop-shadow(0 8px 12px rgba(20,40,60,.18))}",
     "html[data-tg-theme='dark'] #tg-hero{filter:drop-shadow(0 12px 16px rgba(0,0,0,.5))}",
@@ -77,6 +77,16 @@
   btn.type = "button";
   btn.setAttribute("data-tg-ignore", "");
   document.body.appendChild(hero);
+  var clip = document.createElement("video");
+  clip.id = "tg-clip";
+  clip.muted = true;
+  clip.defaultMuted = true;
+  clip.playsInline = true;
+  clip.preload = "auto";
+  clip.setAttribute("playsinline", "");
+  clip.src = asset("thunder-strike.webm");
+  clip.style.opacity = "0";
+  document.body.appendChild(clip);
   document.body.appendChild(btn);
 
   var muted = false;
@@ -416,8 +426,22 @@
     smash.fromY = clamp(y - 280, 20, window.innerHeight * 0.45);
     smash.ctrlX = (smash.fromX + x) / 2;
     smash.ctrlY = Math.min(smash.fromY, y) - 170;
-    bolts.push(makeBolt(smash.fromX * 0.3 + x * 0.2, -10, x, Math.max(30, y - 80), 80));
-    if (ac && !muted) {
+    smash.clip = !reduceMotion && clip.readyState >= 2;
+    if (smash.clip) {
+      hideHero();
+      placeClip();
+      clip.playbackRate = 1.15;
+      try { clip.currentTime = 0; } catch (e) { /* seek when ready */ }
+      clip.style.opacity = "1";
+      var playing = clip.play();
+      if (playing && playing.catch) {
+        playing.catch(function () {
+          smash.clip = false;
+          clip.style.opacity = "0";
+        });
+      }
+    }
+    if (ac && !muted && !smash.clip) {
       var t0 = ac.currentTime + 0.01;
       if (reduceMotion) {
         playBoom(t0);
@@ -437,8 +461,20 @@
     smash.mark = null;
   }
 
+  function placeClip() {
+    var aspect = clip.videoWidth && clip.videoHeight ? clip.videoWidth / clip.videoHeight : 400 / 608;
+    var w = Math.min(300, window.innerWidth * 0.62);
+    var h = w / aspect;
+    clip.style.width = w + "px";
+    clip.style.height = h + "px";
+    clip.style.transform = "translate3d(" + (smash.x - 0.4 * w) + "px," + (smash.y - 0.96 * h) + "px,0)";
+  }
+
   function endSmash() {
     smash.active = false;
+    smash.clip = false;
+    clip.pause();
+    clip.style.opacity = "0";
     hideHero();
     clearMark();
     var url = smash.go;
@@ -451,6 +487,22 @@
   }
 
   function stepSmash(now) {
+    if (smash.clip) {
+      placeClip();
+      var dur = clip.duration || 8;
+      if (!smash.hit && clip.currentTime > dur * 0.9) {
+        smash.hit = true;
+        burst(smash.x, smash.y);
+        if (audioUnlocked && !muted && audioCtx) {
+          var hitAt = audioCtx.currentTime + 0.01;
+          playBoom(hitAt);
+          playBlast(hitAt + 0.18);
+          playThunder(hitAt + 0.38);
+        }
+      }
+      if (clip.ended) endSmash();
+      return;
+    }
     var t = (now - smash.t0) / 1000;
     var sw = Math.min(SMASH_W, window.innerWidth * 0.62);
     var fw = Math.min(FLY_W, window.innerWidth * 0.42);
@@ -541,7 +593,7 @@
     if (!fx) return;
     fx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     var dim = 0;
-    if (smash.active) {
+    if (smash.active && !smash.clip) {
       var t = (performance.now() - smash.t0) / 1000;
       if (t > 1.85 && t < 2.15 && isDark()) dim = 0.1;
     }
@@ -710,6 +762,7 @@
       style.remove();
       if (canvas) canvas.remove();
       hero.remove();
+      clip.remove();
       btn.remove();
       document.documentElement.classList.remove("tg-shake");
       if (window.__thunderGuard === api) delete window.__thunderGuard;
