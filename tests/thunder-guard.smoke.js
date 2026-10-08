@@ -395,6 +395,38 @@ function run() {
     ok(st.cx > 0, "follow: moves toward cursor (cx=" + st.cx.toFixed(2) + ")");
   }
 
+  // 23. stormfall: only fires at tier-4 idle, never at 2s/8s/20s
+  {
+    const sb = makeSandbox();
+    sb.api._internals._testNoLap();
+    for (let i = 0; i < 82; i++) { sb.advance(250); sb.step(); } // 20.5s: tier-3 fired
+    const t3 = sb.api._internals.jazzAntic();
+    ok(t3 !== null && t3 !== "stormfall",
+      "stormfall: tier-3 antic is not stormfall (got " + t3 + ")");
+    for (let i = 0; i < 40; i++) { sb.advance(250); sb.step(); } // 30.5s: tier-4 fires
+    ok(sb.api._internals.jazzAntic() === "stormfall",
+      "stormfall: fires at tier-4 idle (got " + sb.api._internals.jazzAntic() + ")");
+    for (let i = 0; i < 13; i++) { sb.advance(50); sb.step(); } // fine steps through the gather
+    ok(sb.api._internals.fxCounts().bolts === 6,
+      "stormfall: 6 converging bolts in gather (got " + sb.api._internals.fxCounts().bolts + ")");
+  }
+
+  // 24. stormfall reduced-motion: no rise, no bolts, never enters IDLE_JAZZ
+  {
+    const sb = makeSandbox({ matchMedia: { "(prefers-reduced-motion: reduce)": true } });
+    sb.api._internals._testNoLap();
+    sb.step();
+    const hero = sb.created.find(e => e.id === "tg-hero");
+    const before = hero.style.transform;
+    for (let i = 0; i < 124; i++) { sb.advance(250); sb.step(); } // 31s: past t4
+    ok(sb.api._internals.fxCounts().bolts === 0,
+      "stormfall reduced-motion: no bolts (got " + sb.api._internals.fxCounts().bolts + ")");
+    ok(hero.style.transform === before,
+      "stormfall reduced-motion: mascot stays put");
+    ok(sb.api._internals.jazzAntic() === null,
+      "stormfall reduced-motion: never enters IDLE_JAZZ");
+  }
+
   console.log("\n" + passed + " passed, " + failed + " failed");
   if (failures.length) console.log("failures:", failures);
   process.exit(failed ? 1 : 0);

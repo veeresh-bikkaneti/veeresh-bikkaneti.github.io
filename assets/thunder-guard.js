@@ -21,7 +21,7 @@
     sizeCap: Object.freeze({ fly: [0.24, 0], stand: [0.26, 0.30], smash: [0.42, 0.40], clip: [0.46, 0.50] }), // [vw, vh]
     follow: Object.freeze({ pull: 0.030, drag: 0.74, vmax: 30, bankK: 1.35, bankMax: 22, flipThresh: 2.4, flipDebounce: 150, offX: 56, offY: 68, deadR: 26, driftAmp: 18, driftHz: 0.25, stillMs: 2500 }),
     smash: Object.freeze({ cooldownMs: 1600, spamWindowMs: 2000, spamCount: 3, throttleMs: 3000, shakeMs: 450 }),
-    jazz: Object.freeze({ t1: 2000, t2: 8000, t3: 20000, copyCdMs: 120000, budgetPerMin: 4 }),
+    jazz: Object.freeze({ t1: 2000, t2: 8000, t3: 20000, t4: 30000, copyCdMs: 120000, budgetPerMin: 4 }),
     idleAudio: Object.freeze({ rumbleMin: 9000, rumbleMax: 15000, tickMin: 1200, tickMax: 3500, gain: 0.30 }),
     sleepMs: 1000
   });
@@ -364,6 +364,13 @@
   function playExhale(when) { // abstract effort breath — no vocal grunts (IP risk)
     noiseBurst(when, 0.28, { type: "bandpass", freq: 640, q: 1.1, peak: 0.055, sweepTo: 380 }, "whoosh");
   }
+  function playChargeRise(when) { // stormfall gather: 1.1s rising charge, 90Hz saw -> 420Hz + airy lift
+    tone(when, 90, 1.1, 0.13, "sawtooth", 420, "thunder");
+    noiseBurst(when, 1.1, { type: "bandpass", freq: 400, q: 1.2, peak: 0.06, sweepTo: 2400 }, "thunder");
+  }
+  function playSoftCrack(when) { // muted thunder crack for the reduced-motion stormfall whisper
+    noiseBurst(when, 0.1, { type: "lowpass", freq: 900, q: 0.5, peak: 0.07, sweepTo: 300 }, "thunder");
+  }
   /* idle bus: distant weather, stays <= -30dBFS (review §5) */
   function playIdleRumble(when) {
     tone(when, 48, 1.6, 0.045, "sine", 30, "idle", idleBus);
@@ -682,14 +689,15 @@
     { id: "survey", tiers: [2], dur: 2000, w: 20, cd: 50000 },
     { id: "cape", tiers: [2], dur: 1400, w: 16, cd: 55000, audio: "cape" },
     { id: "charge", tiers: [3], dur: 1800, w: 7, cd: 90000, audio: "charge" },
-    { id: "worthy", tiers: [2, 3], dur: 1600, w: 5, cd: 75000, audio: "thud" }
+    { id: "worthy", tiers: [2, 3], dur: 1600, w: 5, cd: 75000, audio: "thud" },
+    { id: "stormfall", tiers: [4], dur: 3200, w: 3, cd: 150000, audio: "stormfall" } // tier-4 mythic: rarest showpiece
   ];
   var COPY_LINES = [
     "Hold fast, traveler — the storm bears us onward.",
     "A quiet sky is a good sky. I stand ready regardless.",
     "The storm marks your place."
   ];
-  var jazz = { tierFired: [false, false, false], lastAntic: null, lastPlayed: {}, cur: null, returnTo: ST.STAND, lastCopy: 0 };
+  var jazz = { tierFired: [false, false, false, false], lastAntic: null, lastPlayed: {}, cur: null, returnTo: ST.STAND, lastCopy: 0 };
   var ambientEvents = []; // passive budget: laps + jazz + flourishes
   function budgetOk() {
     var cut = performance.now() - 60000;
@@ -729,8 +737,22 @@
     return { x: a.x, y: a.y, face: a.face };
   }
 
+  // tier-4 reduced-motion variant: no rise, no bolts, mascot stays put —
+  // just a soft flash and a muted crack so the moment still lands.
+  function stormfallReduced() {
+    flash = Math.max(flash, 0.06);
+    if (audioUnlocked && !muted && audioCtx) playSoftCrack(audioCtx.currentTime + 0.01);
+  }
+
   function startJazz(tier, now) {
-    if (reduceMotion || !budgetOk()) { jazz.tierFired[tier - 1] = true; return; }
+    if (!budgetOk()) { jazz.tierFired[tier - 1] = true; return; }
+    if (reduceMotion) {
+      // tier-4 mythic still gets a whisper under reduced motion: soft flash + muted
+      // crack, mascot stays put, no rise, no bolts. Tiers 1-3 stay silent as before.
+      if (tier === 4) stormfallReduced();
+      jazz.tierFired[tier - 1] = true;
+      return;
+    }
     var def = pickAntic(tier, now);
     if (!def) { jazz.tierFired[tier - 1] = true; return; }
     ensureCanvas(); // P1-8: jazz bolts/flash need the FX layer or they're invisible + defeat rAF sleep
@@ -747,6 +769,7 @@
     if (def.audio === "thud" && audioUnlocked && !muted && audioCtx) playThud(audioCtx.currentTime + 0.35);
     if (def.audio === "charge" && audioUnlocked && !muted && audioCtx) playRumble(audioCtx.currentTime + 0.01);
     if (def.audio === "fist" && audioUnlocked && !muted && audioCtx) playCrack(audioCtx.currentTime + 0.35);
+    if (def.audio === "stormfall" && audioUnlocked && !muted && audioCtx) playChargeRise(audioCtx.currentTime + 0.01);
     maybeCopy(base.x, base.y, now, tier);
     wake();
   }
@@ -768,9 +791,9 @@
     try { ae = document.activeElement; } catch (e) { /* noop */ }
     if (ae && ae.tagName && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return; // P1-15: never jazz over a focused form
     var idle = now - lastActive;
-    var tiers = [CONFIG.jazz.t1, CONFIG.jazz.t2, CONFIG.jazz.t3];
-    for (var i = 0; i < 3; i++) {
-      if (calmMode && i === 2) continue; // P1-17: calm visitors skip the tier-3 showpiece
+    var tiers = [CONFIG.jazz.t1, CONFIG.jazz.t2, CONFIG.jazz.t3, CONFIG.jazz.t4];
+    for (var i = 0; i < 4; i++) {
+      if (calmMode && i >= 2) continue; // P1-17: calm visitors skip the showpieces (tier-3 + tier-4)
       if (!jazz.tierFired[i] && idle >= tiers[i]) { startJazz(i + 1, now); return; }
     }
   }
@@ -818,6 +841,39 @@
         place("fly", base.x, ry, sizes.fly, 0, 1, 1);
         if (u > 0.3 && j.snapped < 1) { j.snapped = 1; bolts.push(makeBolt(base.x - 60, -20, base.x - 20, ry - 30, 70)); wake(); }
         if (u > 0.6 && j.snapped < 2) { j.snapped = 2; bolts.push(makeBolt(base.x + 70, -20, base.x + 25, ry - 24, 70)); flash = Math.max(flash, 0.08); wake(); }
+        break;
+      }
+      case "stormfall": { // tier-4 mythic: dramatic storm-summon
+        // 0-1.2s gather: rise 60px (ease-out) + 6 sky-bolts converging on the hammer-head point
+        // 1.2-1.6s peak: thunder crack + deep boom, flash to cap, 2 shockwaves, 55ms hit-stop
+        // 1.6-3.2s: bolts decay, descend, settle
+        var GU = 0.375, PK = 0.5; // gather / peak boundaries as fractions of dur (3200ms)
+        var rise;
+        if (u < GU) rise = 60 * easeOut(u / GU);
+        else if (u < PK) rise = 60;
+        else { var dt2 = (u - PK) / (1 - PK); rise = 60 * (0.5 + 0.5 * Math.cos(dt2 * Math.PI)); }
+        var sy = base.y - rise;
+        place("stand", base.x, sy, w, Math.sin(u * Math.PI) * 2, 1, 1 + 0.03 * env);
+        var hx = base.x + face * 14, hy = sy - 96; // hammer-head point, above the raised weapon
+        if (u < GU && j.snapped < 6 && u > 0.02 + j.snapped * 0.065) {
+          j.snapped++;
+          bolts.push(makeBolt(hx + (Math.random() * 320 - 160), -20, hx, hy, 80));
+          flash = Math.max(flash, 0.05 + (u / GU) * 0.16);
+          wake();
+        }
+        if (u >= GU && !j.struck) {
+          j.struck = true;
+          if (audioUnlocked && !muted && audioCtx) {
+            var pt = audioCtx.currentTime + 0.01;
+            playCrack(pt);
+            playBoom(pt + 0.05);
+          }
+          flash = Math.max(flash, 0.5); // drawFx caps to the theme cap
+          shocks.push({ x: hx, y: hy, life: 1.15, max: 1.15 });
+          shocks.push({ x: hx, y: hy, life: 0.85, max: 0.85 });
+          hitStopUntil = performance.now() + 55; // 55ms hit-stop sells the peak
+          wake();
+        }
         break;
       }
       case "worthy": {
@@ -1174,8 +1230,8 @@
     if (document.hidden) return;
     var idle = now - lastActive;
     var next = Infinity;
-    var tiers = [CONFIG.jazz.t1, CONFIG.jazz.t2, CONFIG.jazz.t3];
-    for (var i = 0; i < 3; i++) {
+    var tiers = [CONFIG.jazz.t1, CONFIG.jazz.t2, CONFIG.jazz.t3, CONFIG.jazz.t4];
+    for (var i = 0; i < 4; i++) {
       if (!jazz.tierFired[i]) next = Math.min(next, tiers[i] - idle);
     }
     if (nextRumbleT > now) next = Math.min(next, nextRumbleT - now);
@@ -1197,7 +1253,7 @@
   function noteActive() {
     lastActive = performance.now();
     if (jazz.cur) endJazz(); // P1-13: fresh input cancels a playing antic
-    jazz.tierFired = [false, false, false];
+    jazz.tierFired = [false, false, false, false];
     wake();
   }
 
@@ -1428,8 +1484,12 @@
       sizes: function () { return sizes; },
       fxCounts: function () { return { particles: particles.length, bolts: bolts.length, shocks: shocks.length }; },
       noteActive: noteActive,
+      // test hook: current jazz antic id (null when no antic playing)
+      jazzAntic: function () { return jazz.cur ? jazz.cur.def.id : null; },
       // test hook: seed the spam counter to reproduce the throttle path deterministically
-      _testSpam: function () { var n = performance.now(); for (var i = 0; i < 4; i++) tapTimes.push(n); }
+      _testSpam: function () { var n = performance.now(); for (var i = 0; i < 4; i++) tapTimes.push(n); },
+      // test hook: disable auto-laps for deterministic idle-tier tests
+      _testNoLap: function () { lap.next = Infinity; }
     }
   };
   window.__thunderGuard = api;
