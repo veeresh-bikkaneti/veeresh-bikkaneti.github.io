@@ -55,6 +55,7 @@
       --band-surface-l: #2a2c31; --band-surface-d: #302d27;
       --band-text-l: #ece5d3; --band-text-d: #ece5d3;
       --band-muted-l: #bdb29a; --band-muted-d: #a99c83;
+      --band-link-l: #b5925e;  --band-link-d: #c9a876;   /* AA-safe tan for small links on band cards */
       --hero-grad-l: linear-gradient(100deg, #f0e8d8 0%, #eadfc9 42%, #b3a48d 74%, #575046 88%, #37332e 100%);
       --hero-grad-d: linear-gradient(100deg, #26241f 0%, #2c2924 45%, #3a362e 78%, #171512 100%);
 
@@ -63,7 +64,7 @@
       --text: var(--text-l); --muted: var(--muted-l); --border: var(--border-l);
       --accent: var(--accent-l); --accent-2: var(--accent-2-l); --on-accent: var(--on-accent-l); --glow: var(--glow-l);
       --hcard: var(--hcard-l); --link: var(--link-l); --tan: var(--tan-l); --band: var(--band-l); --band-surface: var(--band-surface-l);
-      --band-text: var(--band-text-l); --band-muted: var(--band-muted-l); --hero-grad: var(--hero-grad-l);
+      --band-text: var(--band-text-l); --band-muted: var(--band-muted-l); --band-link: var(--band-link-l); --hero-grad: var(--hero-grad-l);
 
       --radius: 14px;
       --radius-sm: 8px;
@@ -81,7 +82,7 @@
         --text: var(--text-d); --muted: var(--muted-d); --border: var(--border-d);
         --accent: var(--accent-d); --accent-2: var(--accent-2-d); --on-accent: var(--on-accent-d); --glow: var(--glow-d);
         --hcard: var(--hcard-d); --link: var(--link-d); --tan: var(--tan-d); --band: var(--band-d); --band-surface: var(--band-surface-d);
-        --band-text: var(--band-text-d); --band-muted: var(--band-muted-d); --hero-grad: var(--hero-grad-d);
+        --band-text: var(--band-text-d); --band-muted: var(--band-muted-d); --band-link: var(--band-link-d); --hero-grad: var(--hero-grad-d);
       }
     }
     /* manual override without light-dark() */
@@ -90,7 +91,7 @@
       --text: var(--text-l); --muted: var(--muted-l); --border: var(--border-l);
       --accent: var(--accent-l); --accent-2: var(--accent-2-l); --on-accent: var(--on-accent-l); --glow: var(--glow-l);
       --hcard: var(--hcard-l); --link: var(--link-l); --tan: var(--tan-l); --band: var(--band-l); --band-surface: var(--band-surface-l);
-      --band-text: var(--band-text-l); --band-muted: var(--band-muted-l); --hero-grad: var(--hero-grad-l);
+      --band-text: var(--band-text-l); --band-muted: var(--band-muted-l); --band-link: var(--band-link-l); --hero-grad: var(--hero-grad-l);
       color-scheme: light;
     }
     :root[data-theme="dark"] {
@@ -98,7 +99,7 @@
       --text: var(--text-d); --muted: var(--muted-d); --border: var(--border-d);
       --accent: var(--accent-d); --accent-2: var(--accent-2-d); --on-accent: var(--on-accent-d); --glow: var(--glow-d);
       --hcard: var(--hcard-d); --link: var(--link-d); --tan: var(--tan-d); --band: var(--band-d); --band-surface: var(--band-surface-d);
-      --band-text: var(--band-text-d); --band-muted: var(--band-muted-d); --hero-grad: var(--hero-grad-d);
+      --band-text: var(--band-text-d); --band-muted: var(--band-muted-d); --band-link: var(--band-link-d); --hero-grad: var(--hero-grad-d);
       color-scheme: dark;
     }
     /* modern path — note: --hero-grad is deliberately absent below.
@@ -123,6 +124,7 @@
         --band-surface: light-dark(var(--band-surface-l), var(--band-surface-d));
         --band-text: light-dark(var(--band-text-l), var(--band-text-d));
         --band-muted: light-dark(var(--band-muted-l), var(--band-muted-d));
+        --band-link: light-dark(var(--band-link-l), var(--band-link-d));
       }
     }
 
@@ -360,10 +362,12 @@
     #projects .tag { background: transparent; color: var(--band-muted); border-color: color-mix(in srgb, var(--band-text) 22%, transparent); }
     #projects .tag.live { color: #4ade80; background: rgb(34 197 94 / .12); border-color: rgb(34 197 94 / .3); }
     #projects .more { color: var(--tan); }
-    /* band is dark in both themes: links/counts there keep the light-on-dark tan.
-       Light theme: tan-l 4.35:1 on the card surface < AA 4.5, so small band links
-       use an AA-safe tan (4.82:1); dark theme keeps --tan-d (7.7:1). */
-    #projects .card .links a, #projects .count { color: light-dark(#b5925e, var(--tan-d)); }
+    /* band is dark in both themes: small links/counts on band cards use --band-link.
+       Light theme: --tan-l computes 4.35:1 on the card surface (< AA 4.5), so
+       --band-link-l is an AA-safe tan (4.82:1 on the card surface); dark theme
+       --band-link-d carries the --tan-d value (6.11:1 on the card surface).
+       Dormant today: #projects cards render no .links/.count elements yet. */
+    #projects .card .links a, #projects .count { color: var(--band-link); }
     .about-top { display: grid; gap: 1.5rem; grid-template-columns: 1fr; align-items: start; margin-block-end: .5rem; }
     @media (min-width: 52rem) { .about-top { grid-template-columns: auto 1fr; } .about-top .section-head { margin-block-end: 0; } }
 
