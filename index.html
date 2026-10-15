@@ -14,6 +14,7 @@
           document.documentElement.dataset.theme = s;
         }
       } catch (e) {}
+      document.documentElement.classList.add("js");
     }
   </script>
   <title>Veeresh Bikkaneti — Business Analyst, Product Owner, Scrum Master &amp; QA Architect</title>
@@ -26,11 +27,10 @@
   <meta property="og:url" content="https://veeresh-bikkaneti.github.io/">
   <meta property="og:image" content="https://avatars.githubusercontent.com/u/57240576?v=4">
   <meta name="twitter:card" content="summary">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e7490'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='system-ui,sans-serif' font-weight='700' font-size='34' fill='white'%3EVB%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ac8a5c'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='system-ui,sans-serif' font-weight='700' font-size='34' fill='white'%3EVB%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-  <link rel="preload" as="image" href="https://avatars.githubusercontent.com/u/57240576?v=4&s=240" fetchpriority="high">
 
   <style>
     /* ---------- Tokens ---------- */
@@ -50,6 +50,7 @@
       --glow-l: rgb(172 138 92 / .12); --glow-d: rgb(201 168 118 / .10);
       --tan-l: #ac8a5c;       --tan-d: #c9a876;
       --link-l: #75582e;      --link-d: #c9a876;   /* text tan — AA on cream; fills keep --tan */
+      --hcard-l: #232529;     --hcard-d: #1c1a17;
       --band-l: #232529;      --band-d: #1c1a17;
       --band-surface-l: #2a2c31; --band-surface-d: #302d27;
       --band-text-l: #ece5d3; --band-text-d: #ece5d3;
@@ -61,7 +62,7 @@
       --bg: var(--bg-l); --surface: var(--surface-l); --surface-2: var(--surface-2-l);
       --text: var(--text-l); --muted: var(--muted-l); --border: var(--border-l);
       --accent: var(--accent-l); --accent-2: var(--accent-2-l); --on-accent: var(--on-accent-l); --glow: var(--glow-l);
-      --link: var(--link-l); --tan: var(--tan-l); --band: var(--band-l); --band-surface: var(--band-surface-l);
+      --hcard: var(--hcard-l); --link: var(--link-l); --tan: var(--tan-l); --band: var(--band-l); --band-surface: var(--band-surface-l);
       --band-text: var(--band-text-l); --band-muted: var(--band-muted-l); --hero-grad: var(--hero-grad-l);
 
       --radius: 14px;
@@ -79,7 +80,7 @@
         --bg: var(--bg-d); --surface: var(--surface-d); --surface-2: var(--surface-2-d);
         --text: var(--text-d); --muted: var(--muted-d); --border: var(--border-d);
         --accent: var(--accent-d); --accent-2: var(--accent-2-d); --on-accent: var(--on-accent-d); --glow: var(--glow-d);
-        --link: var(--link-d); --tan: var(--tan-d); --band: var(--band-d); --band-surface: var(--band-surface-d);
+        --hcard: var(--hcard-d); --link: var(--link-d); --tan: var(--tan-d); --band: var(--band-d); --band-surface: var(--band-surface-d);
         --band-text: var(--band-text-d); --band-muted: var(--band-muted-d); --hero-grad: var(--hero-grad-d);
       }
     }
@@ -88,7 +89,7 @@
       --bg: var(--bg-l); --surface: var(--surface-l); --surface-2: var(--surface-2-l);
       --text: var(--text-l); --muted: var(--muted-l); --border: var(--border-l);
       --accent: var(--accent-l); --accent-2: var(--accent-2-l); --on-accent: var(--on-accent-l); --glow: var(--glow-l);
-      --link: var(--link-l); --tan: var(--tan-l); --band: var(--band-l); --band-surface: var(--band-surface-l);
+      --hcard: var(--hcard-l); --link: var(--link-l); --tan: var(--tan-l); --band: var(--band-l); --band-surface: var(--band-surface-l);
       --band-text: var(--band-text-l); --band-muted: var(--band-muted-l); --hero-grad: var(--hero-grad-l);
       color-scheme: light;
     }
@@ -96,11 +97,13 @@
       --bg: var(--bg-d); --surface: var(--surface-d); --surface-2: var(--surface-2-d);
       --text: var(--text-d); --muted: var(--muted-d); --border: var(--border-d);
       --accent: var(--accent-d); --accent-2: var(--accent-2-d); --on-accent: var(--on-accent-d); --glow: var(--glow-d);
-      --link: var(--link-d); --tan: var(--tan-d); --band: var(--band-d); --band-surface: var(--band-surface-d);
+      --hcard: var(--hcard-d); --link: var(--link-d); --tan: var(--tan-d); --band: var(--band-d); --band-surface: var(--band-surface-d);
       --band-text: var(--band-text-d); --band-muted: var(--band-muted-d); --hero-grad: var(--hero-grad-d);
       color-scheme: dark;
     }
-    /* modern path */
+    /* modern path — note: --hero-grad is deliberately absent below.
+       light-dark() resolves single colours only, not whole gradients, so
+       the gradient tokens keep the fallback + media + data-theme wiring. */
     @supports (color: light-dark(white, black)) {
       :root, :root[data-theme] {
         --bg: light-dark(var(--bg-l), var(--bg-d));
@@ -115,6 +118,7 @@
         --glow: light-dark(var(--glow-l), var(--glow-d));
         --tan: light-dark(var(--tan-l), var(--tan-d));
         --link: light-dark(var(--link-l), var(--link-d));
+        --hcard: light-dark(var(--hcard-l), var(--hcard-d));
         --band: light-dark(var(--band-l), var(--band-d));
         --band-surface: light-dark(var(--band-surface-l), var(--band-surface-d));
         --band-text: light-dark(var(--band-text-l), var(--band-text-d));
@@ -229,7 +233,6 @@
       .h1-mask > .d5 { animation-delay: .55s; }
     }
     @keyframes hero-rise { to { transform: translateY(0); } }
-    .grad { background: linear-gradient(100deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
     .hero .lede { margin-block-start: 1rem; font-size: clamp(1.05rem, 2vw, 1.2rem); color: var(--muted); max-width: 42rem; }
     .cta { display: flex; flex-wrap: wrap; gap: .75rem; margin-block-start: 1.75rem; }
     .btn {
@@ -250,7 +253,7 @@
     .hero-cards { display: grid; gap: clamp(1rem, 3.5vw, 2.5rem); grid-template-columns: 1fr; margin-block-start: 2rem; }
     @media (min-width: 52rem) { .hero-cards { grid-template-columns: repeat(3, 1fr); } }
     .hcard { position: relative; display: flex; flex-direction: column; gap: .55rem; min-height: 8.4rem; padding: 1.15rem 1.25rem;
-      border-radius: 10px; background: #232529; color: #ece5d3; border: 1px solid rgb(236 229 211 / .14); box-shadow: var(--shadow); }
+      border-radius: 10px; background: var(--hcard); color: #ece5d3; border: 1px solid rgb(236 229 211 / .14); box-shadow: var(--shadow); }
     .hcard .k { font: 500 .66rem/1 var(--mono); letter-spacing: .24em; text-transform: uppercase; color: #b39d74; }
     .hcard p { font-family: var(--serif); font-size: 1.05rem; line-height: 1.35; }
     .hcard a { margin-block-start: auto; color: #ece5d3; text-decoration: none; font: 500 .66rem/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; }
@@ -357,12 +360,16 @@
     @media (min-width: 52rem) { .about-top { grid-template-columns: auto 1fr; } .about-top .section-head { margin-block-end: 0; } }
 
     /* ---------- Scroll reveals (arrive by moving, not fading) ---------- */
+    /* Hidden state requires BOTH html.js (set pre-paint by the head script)
+       and no-preference motion, so no-JS and reduced-motion readers always
+       see the content; the reveal script reveals everything if
+       IntersectionObserver is unavailable. */
     @media (prefers-reduced-motion: no-preference) {
-      .rv { transform: translateY(30px); opacity: 0; }
-      .rv.in { transform: none; opacity: 1; transition: transform .95s var(--ease), opacity .7s ease; }
-      .grid li:nth-child(2) .rv.in, .hero-cards .rv.in:nth-child(2), .about > .rv.in:nth-child(2) { transition-delay: .08s; }
-      .grid li:nth-child(3) .rv.in, .hero-cards .rv.in:nth-child(3), .about > .rv.in:nth-child(3) { transition-delay: .16s; }
-      .grid li:nth-child(4) .rv.in { transition-delay: .24s; }
+      html.js .rv { transform: translateY(30px); opacity: 0; }
+      html.js .rv.in { transform: none; opacity: 1; transition: transform .95s var(--ease), opacity .7s ease; }
+      html.js .grid li:nth-child(2) .rv.in, html.js .hero-cards .rv.in:nth-child(2), html.js .about > .rv.in:nth-child(2) { transition-delay: .08s; }
+      html.js .grid li:nth-child(3) .rv.in, html.js .hero-cards .rv.in:nth-child(3), html.js .about > .rv.in:nth-child(3) { transition-delay: .16s; }
+      html.js .grid li:nth-child(4) .rv.in { transition-delay: .24s; }
     }
 
     /* ---------- Veer chatbot ---------- */
@@ -677,7 +684,7 @@
 <section id="about" aria-labelledby="about-title">
       <div class="wrap">
         <div class="about-top">
-          <img class="avatar" src="https://avatars.githubusercontent.com/u/57240576?v=4&s=240" width="160" height="160" alt="Portrait of Veeresh Bikkaneti">
+          <img class="avatar" loading="lazy" src="https://avatars.githubusercontent.com/u/57240576?v=4&s=240" width="160" height="160" alt="Portrait of Veeresh Bikkaneti">
           <div class="section-head rv">
           <div>
             <h2 id="about-title">About</h2>
@@ -1408,13 +1415,14 @@
       });
     })();
   </script>
-  <!-- Scroll reveals: dependency-free; the hidden state only exists under
-       prefers-reduced-motion: no-preference, so no-JS/reduced-motion readers
-       always see the content. -->
+  <!-- Scroll reveals: dependency-free. The hidden .rv state is gated on
+       html.js + prefers-reduced-motion: no-preference in CSS; if
+       IntersectionObserver is missing we reveal everything outright. -->
   <script>
     (() => {
       const els = document.querySelectorAll(".rv");
-      if (!els.length || !("IntersectionObserver" in window)) return;
+      if (!els.length) return;
+      if (!("IntersectionObserver" in window)) { els.forEach((el) => el.classList.add("in")); return; }
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const io = new IntersectionObserver((entries) => {
         for (const e of entries) {
@@ -1424,11 +1432,17 @@
       els.forEach((el) => io.observe(el));
     })();
   </script>
-  <!-- Hero 3D: lazy-load the Three.js scene off the critical path. -->
+  <!-- Hero 3D: lazy-load the Three.js scene off the critical path, and
+       skip it entirely for data-saver or low-end small/touch devices. -->
   <script type="module">
-    const startHero3D = () => import("./assets/hero3d.js").then((m) => m.initHero3D()).catch(() => {});
-    if ("requestIdleCallback" in window) requestIdleCallback(startHero3D, { timeout: 1200 });
-    else setTimeout(startHero3D, 300);
+    const conn = navigator.connection;
+    const lowEnd = (navigator.hardwareConcurrency || 99) < 4 || (navigator.deviceMemory || 99) < 2;
+    const smallTouch = window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 832;
+    if (!(conn && conn.saveData) && !(lowEnd && smallTouch)) {
+      const startHero3D = () => import("./assets/hero3d.js").then((m) => m.initHero3D()).catch(() => {});
+      if ("requestIdleCallback" in window) requestIdleCallback(startHero3D, { timeout: 1200 });
+      else setTimeout(startHero3D, 300);
+    }
   </script>
   <script src="assets/thunder-guard.js?v=9" defer></script>
 </body>
