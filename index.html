@@ -149,6 +149,8 @@
     h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: 0; }
     p { margin: 0; text-wrap: pretty; }
     :focus-visible { outline: 3px solid var(--link); outline-offset: 3px; border-radius: 6px; }
+    /* focus on dark surfaces (hero cards, dark band, footer): --link is too dark there; tan computes 4.78:1 light / 7.73:1 dark */
+    .hcard a:focus-visible, #projects .more:focus-visible, footer a:focus-visible { outline-color: var(--tan); }
     ::selection { background: var(--accent); color: var(--on-accent); }
 
     .wrap { width: min(100% - 2 * var(--gutter), var(--max)); margin-inline: auto; }

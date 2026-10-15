@@ -54,7 +54,7 @@ export function initHero3D() {
     const rings = new THREE.Group();
     rings.add(new THREE.LineSegments(geo(new Float32Array(rPos)), ringMat));
     globe.add(rings);
-    const sat = new THREE.Points(geo(new Float32Array([1.5, 0, 0])), new THREE.PointsMaterial({ color: 0xac8a5c, size: 0.05, transparent: true, opacity: 0.95 }));
+    const sat = new THREE.Points(geo(new Float32Array([0, 0, 0])), new THREE.PointsMaterial({ color: 0xac8a5c, size: 0.05, transparent: true, opacity: 0.95 }));
     globe.add(sat);
     const dPos = new Float32Array(140 * 3);
     for (let i = 0; i < 140; i++) { dPos[i * 3] = (Math.random() - 0.5) * 7; dPos[i * 3 + 1] = (Math.random() - 0.5) * 3.4; dPos[i * 3 + 2] = (Math.random() - 0.5) * 1.5; }
