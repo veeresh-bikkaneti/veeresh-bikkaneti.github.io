@@ -14,6 +14,7 @@
           document.documentElement.dataset.theme = s;
         }
       } catch (e) {}
+      document.documentElement.classList.add("js");
     }
   </script>
   <title>Veeresh Bikkaneti — Business Analyst, Product Owner, Scrum Master &amp; QA Architect</title>
@@ -26,39 +27,52 @@
   <meta property="og:url" content="https://veeresh-bikkaneti.github.io/">
   <meta property="og:image" content="https://avatars.githubusercontent.com/u/57240576?v=4">
   <meta name="twitter:card" content="summary">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e7490'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='system-ui,sans-serif' font-weight='700' font-size='34' fill='white'%3EVB%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ac8a5c'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='system-ui,sans-serif' font-weight='700' font-size='34' fill='white'%3EVB%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-  <link rel="preload" as="image" href="https://avatars.githubusercontent.com/u/57240576?v=4&s=240" fetchpriority="high">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
 
   <style>
     /* ---------- Tokens ---------- */
     :root {
       color-scheme: light dark;
 
-      /* raw palette */
-      --bg-l: #f7f9fb;        --bg-d: #0b1117;
-      --surface-l: #ffffff;   --surface-d: #111a23;
-      --surface-2-l: #eef3f7; --surface-2-d: #16212c;
-      --text-l: #0f1b26;      --text-d: #e6edf3;
-      --muted-l: #4a5968;     --muted-d: #9aabbb;
-      --border-l: #dbe3ea;    --border-d: #243240;
-      --accent-l: #0e7490;    --accent-d: #22d3ee;   /* teal-cyan, matches Tech Talk blog */
-      --accent-2-l: #4f46e5;  --accent-2-d: #a5b4fc;
-      --on-accent-l: #ffffff; --on-accent-d: #04141a;
-      --glow-l: rgb(14 116 144 / .10); --glow-d: rgb(34 211 238 / .14);
+      /* raw palette — cream editorial (light) / deep taupe-charcoal (dark) */
+      --bg-l: #eadfc9;        --bg-d: #26241f;
+      --surface-l: #f6f0e2;   --surface-d: #302d27;
+      --surface-2-l: #f0e8d8; --surface-2-d: #38342c;
+      --text-l: #232529;      --text-d: #ece5d3;
+      --muted-l: #5c5546;     --muted-d: #bdb29a;
+      --border-l: #c9ba97;    --border-d: #4a463c;
+      --accent-l: #ac8a5c;    --accent-d: #c9a876;   /* tan — the editorial accent */
+      --accent-2-l: #232529;  --accent-2-d: #e2cda4;
+      --on-accent-l: #26241f; --on-accent-d: #26241f;
+      --glow-l: rgb(172 138 92 / .12); --glow-d: rgb(201 168 118 / .10);
+      --tan-l: #ac8a5c;       --tan-d: #c9a876;
+      --link-l: #75582e;      --link-d: #c9a876;   /* text tan — AA on cream; fills keep --tan */
+      --hcard-l: #232529;     --hcard-d: #1c1a17;
+      --band-l: #232529;      --band-d: #1c1a17;
+      --band-surface-l: #2a2c31; --band-surface-d: #302d27;
+      --band-text-l: #ece5d3; --band-text-d: #ece5d3;
+      --band-muted-l: #bdb29a; --band-muted-d: #a99c83;
+      --band-link-l: #b5925e;  --band-link-d: #c9a876;   /* AA-safe tan for small links on band cards */
+      --hero-grad-l: linear-gradient(100deg, #f0e8d8 0%, #eadfc9 42%, #b3a48d 74%, #575046 88%, #37332e 100%);
+      --hero-grad-d: linear-gradient(100deg, #26241f 0%, #2c2924 45%, #3a362e 78%, #171512 100%);
 
       /* fallback (no light-dark() support): light, then dark via media query */
       --bg: var(--bg-l); --surface: var(--surface-l); --surface-2: var(--surface-2-l);
       --text: var(--text-l); --muted: var(--muted-l); --border: var(--border-l);
       --accent: var(--accent-l); --accent-2: var(--accent-2-l); --on-accent: var(--on-accent-l); --glow: var(--glow-l);
+      --hcard: var(--hcard-l); --link: var(--link-l); --tan: var(--tan-l); --band: var(--band-l); --band-surface: var(--band-surface-l);
+      --band-text: var(--band-text-l); --band-muted: var(--band-muted-l); --band-link: var(--band-link-l); --hero-grad: var(--hero-grad-l);
 
       --radius: 14px;
       --radius-sm: 8px;
       --shadow: 0 1px 2px rgb(0 0 0 / .05), 0 8px 24px -12px rgb(0 0 0 / .18);
       --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --serif: "Playfair Display", Georgia, "Times New Roman", serif;
+      --ease: cubic-bezier(.16,.8,.26,1);
       --max: 72rem;
       --gutter: clamp(1rem, 4vw, 2rem);
     }
@@ -67,6 +81,8 @@
         --bg: var(--bg-d); --surface: var(--surface-d); --surface-2: var(--surface-2-d);
         --text: var(--text-d); --muted: var(--muted-d); --border: var(--border-d);
         --accent: var(--accent-d); --accent-2: var(--accent-2-d); --on-accent: var(--on-accent-d); --glow: var(--glow-d);
+        --hcard: var(--hcard-d); --link: var(--link-d); --tan: var(--tan-d); --band: var(--band-d); --band-surface: var(--band-surface-d);
+        --band-text: var(--band-text-d); --band-muted: var(--band-muted-d); --band-link: var(--band-link-d); --hero-grad: var(--hero-grad-d);
       }
     }
     /* manual override without light-dark() */
@@ -74,15 +90,21 @@
       --bg: var(--bg-l); --surface: var(--surface-l); --surface-2: var(--surface-2-l);
       --text: var(--text-l); --muted: var(--muted-l); --border: var(--border-l);
       --accent: var(--accent-l); --accent-2: var(--accent-2-l); --on-accent: var(--on-accent-l); --glow: var(--glow-l);
+      --hcard: var(--hcard-l); --link: var(--link-l); --tan: var(--tan-l); --band: var(--band-l); --band-surface: var(--band-surface-l);
+      --band-text: var(--band-text-l); --band-muted: var(--band-muted-l); --band-link: var(--band-link-l); --hero-grad: var(--hero-grad-l);
       color-scheme: light;
     }
     :root[data-theme="dark"] {
       --bg: var(--bg-d); --surface: var(--surface-d); --surface-2: var(--surface-2-d);
       --text: var(--text-d); --muted: var(--muted-d); --border: var(--border-d);
       --accent: var(--accent-d); --accent-2: var(--accent-2-d); --on-accent: var(--on-accent-d); --glow: var(--glow-d);
+      --hcard: var(--hcard-d); --link: var(--link-d); --tan: var(--tan-d); --band: var(--band-d); --band-surface: var(--band-surface-d);
+      --band-text: var(--band-text-d); --band-muted: var(--band-muted-d); --band-link: var(--band-link-d); --hero-grad: var(--hero-grad-d);
       color-scheme: dark;
     }
-    /* modern path */
+    /* modern path — note: --hero-grad is deliberately absent below.
+       light-dark() resolves single colours only, not whole gradients, so
+       the gradient tokens keep the fallback + media + data-theme wiring. */
     @supports (color: light-dark(white, black)) {
       :root, :root[data-theme] {
         --bg: light-dark(var(--bg-l), var(--bg-d));
@@ -95,6 +117,14 @@
         --accent-2: light-dark(var(--accent-2-l), var(--accent-2-d));
         --on-accent: light-dark(var(--on-accent-l), var(--on-accent-d));
         --glow: light-dark(var(--glow-l), var(--glow-d));
+        --tan: light-dark(var(--tan-l), var(--tan-d));
+        --link: light-dark(var(--link-l), var(--link-d));
+        --hcard: light-dark(var(--hcard-l), var(--hcard-d));
+        --band: light-dark(var(--band-l), var(--band-d));
+        --band-surface: light-dark(var(--band-surface-l), var(--band-surface-d));
+        --band-text: light-dark(var(--band-text-l), var(--band-text-d));
+        --band-muted: light-dark(var(--band-muted-l), var(--band-muted-d));
+        --band-link: light-dark(var(--band-link-l), var(--band-link-d));
       }
     }
 
@@ -116,10 +146,17 @@
       -webkit-font-smoothing: antialiased;
     }
     img { max-width: 100%; display: block; }
-    a { color: var(--accent); text-underline-offset: .18em; }
+    a { color: var(--link); text-underline-offset: .18em; }
     h1, h2, h3 { line-height: 1.2; margin: 0; text-wrap: balance; letter-spacing: -.015em; }
+    h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: 0; }
     p { margin: 0; text-wrap: pretty; }
-    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+    :focus-visible { outline: 3px solid var(--link); outline-offset: 3px; border-radius: 6px; }
+    /* focus on dark surfaces (hero cards, dark band, footer): --link is too dark there; tan computes 4.78:1 light / 7.73:1 dark */
+    .hcard a:focus-visible, #projects .more:focus-visible, #projects .card .links a:focus-visible, footer a:focus-visible { outline-color: var(--tan); }
+    /* the fixed Veer FAB floats over light AND dark surfaces: tan outline alone fails on cream (2.43:1)
+       and --link alone fails on charcoal (2.33:1), so the focus state pairs the tan outline
+       with a dark shadow ring — the combined indicator passes 3:1 on both */
+    .veer-fab:focus-visible { outline-color: var(--tan); box-shadow: 0 0 0 6px rgb(35 37 41 / .82); }
     ::selection { background: var(--accent); color: var(--on-accent); }
 
     .wrap { width: min(100% - 2 * var(--gutter), var(--max)); margin-inline: auto; }
@@ -171,9 +208,11 @@
     }
 
     /* ---------- Hero ---------- */
-    .hero { padding-block: clamp(3rem, 9vw, 6rem) clamp(2.5rem, 6vw, 4rem); }
-    .hero .wrap { display: grid; gap: clamp(1.5rem, 4vw, 3rem); align-items: center; grid-template-columns: 1fr; }
-    @media (min-width: 52rem) { .hero .wrap { grid-template-columns: auto 1fr; } }
+    .hero { position: relative; overflow: hidden; background: var(--hero-grad); padding-block: clamp(2.5rem, 7vw, 4.5rem) clamp(2.5rem, 6vw, 4rem); }
+    #hero3d { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    .hero::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background: linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 88%, transparent) 55%, transparent 85%); }
+    .hero .wrap { position: relative; z-index: 2; }
     .avatar {
       width: clamp(7rem, 18vw, 10rem); aspect-ratio: 1; border-radius: 50%;
       border: 3px solid var(--surface); box-shadow: 0 0 0 3px var(--accent), var(--shadow); object-fit: cover; font-size: 0; /* hide broken-image alt text visually; SR still reads alt */
@@ -182,12 +221,26 @@
     .eyebrow {
       display: inline-flex; align-items: center; gap: .5rem;
       font: 500 .78rem/1 var(--mono); text-transform: uppercase; letter-spacing: .08em;
-      color: var(--accent); background: var(--glow); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+      color: var(--link); background: var(--glow); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
       padding: .45rem .75rem; border-radius: 999px; margin-block-end: 1rem;
     }
     .eyebrow::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px rgb(34 197 94 / .25); }
-    .hero h1 { font-size: clamp(2.1rem, 5.5vw, 3.6rem); font-weight: 800; }
-    .grad { background: linear-gradient(100deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .role-kicker { font: 500 .8rem/1.7 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-block: .25rem 0; }
+    .hero h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(3rem, 8.5vw, 6.8rem); line-height: .99; letter-spacing: -.01em; margin-block-start: 1.1rem; }
+    .h1-mask { display: block; overflow: hidden; padding-bottom: .09em; margin-bottom: -.09em; }
+    .h1-mask > span { display: block; }
+    .h1-tan { color: var(--link); }
+    .h1-tail { font-size: .34em; font-style: italic; }
+    .h1-tail::before { content: "\2014  "; }
+    @media (prefers-reduced-motion: no-preference) {
+      .h1-mask > span { transform: translateY(112%); animation: hero-rise 1.15s var(--ease) forwards; }
+      .h1-mask > .d1 { animation-delay: .05s; }
+      .h1-mask > .d2 { animation-delay: .16s; }
+      .h1-mask > .d3 { animation-delay: .27s; }
+      .h1-mask > .d4 { animation-delay: .38s; }
+      .h1-mask > .d5 { animation-delay: .55s; }
+    }
+    @keyframes hero-rise { to { transform: translateY(0); } }
     .hero .lede { margin-block-start: 1rem; font-size: clamp(1.05rem, 2vw, 1.2rem); color: var(--muted); max-width: 42rem; }
     .cta { display: flex; flex-wrap: wrap; gap: .75rem; margin-block-start: 1.75rem; }
     .btn {
@@ -205,17 +258,33 @@
     .stats { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin-block-start: 1.75rem; padding: 0; list-style: none; color: var(--muted); font-size: .92rem; }
     .stats strong { color: var(--text); font-weight: 700; }
 
+    .hero-cards { display: grid; gap: clamp(1rem, 3.5vw, 2.5rem); grid-template-columns: 1fr; margin-block-start: 2rem; }
+    @media (min-width: 52rem) { .hero-cards { grid-template-columns: repeat(3, 1fr); } }
+    .hcard { position: relative; display: flex; flex-direction: column; gap: .55rem; min-height: 8.4rem; padding: 1.15rem 1.25rem;
+      border-radius: 10px; background: var(--hcard); color: #ece5d3; border: 1px solid rgb(236 229 211 / .14); box-shadow: var(--shadow); }
+    .hcard .k { font: 500 .66rem/1 var(--mono); letter-spacing: .24em; text-transform: uppercase; color: #b39d74; }
+    .hcard p { font-family: var(--serif); font-size: 1.05rem; line-height: 1.35; }
+    .hcard a { margin-block-start: auto; color: #ece5d3; text-decoration: none; font: 500 .66rem/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; }
+    .hcard a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+    .hcard a .arr { display: inline-block; }
+    @media (prefers-reduced-motion: no-preference) {
+      .hcard { transition: transform .5s var(--ease); }
+      .hcard:hover { transform: translateY(-6px); }
+      .hcard a .arr { transition: transform .45s var(--ease); }
+      .hcard a:hover .arr { transform: translateX(5px); }
+    }
+
     /* ---------- Sections ---------- */
     section { padding-block: clamp(2rem, 5vw, 3.5rem); }
     .section-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: .5rem 1rem; margin-block-end: 1.5rem; }
-    .section-head h2 { font-size: clamp(1.4rem, 3vw, 1.85rem); font-weight: 750; }
+    .section-head h2 { font-size: clamp(1.9rem, 3.6vw, 2.7rem); font-weight: 600; }
     .section-head p { color: var(--muted); max-width: 40rem; margin-block-start: .35rem; }
-    .section-head .more { font-weight: 600; text-decoration: none; white-space: nowrap; }
+    .section-head .more { color: var(--link); font-weight: 600; text-decoration: none; white-space: nowrap; }
     .section-head .more:hover { text-decoration: underline; }
     .count {
       display: inline-grid; place-items: center; min-width: 1.75rem; height: 1.75rem; padding-inline: .45rem;
       margin-inline-start: .5rem; vertical-align: .2em; border-radius: 999px;
-      font: 600 .8rem/1 var(--mono); color: var(--accent); background: var(--glow);
+      font: 600 .8rem/1 var(--mono); color: var(--link); background: var(--glow);
     }
 
     /* ---------- Cards ---------- */
@@ -235,14 +304,14 @@
       background: var(--glow); color: var(--accent);
     }
     .card-icon svg { width: 1.3rem; height: 1.3rem; }
-    .card h3 { font-size: 1.08rem; font-weight: 700; overflow-wrap: anywhere; }
+    .card h3 { font-size: 1.28rem; font-weight: 600; overflow-wrap: anywhere; }
     /* whole card is clickable via the title link; secondary links sit above it */
     .card h3 a { color: var(--text); text-decoration: none; }
     .card h3 a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
     .card h3 a:focus-visible { outline: none; }
-    .card:has(h3 a:focus-visible) { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .card:has(h3 a:focus-visible) { outline: 3px solid var(--link); outline-offset: 3px; }
     .card .desc { color: var(--muted); font-size: .95rem; flex: 1; }
-    .card .url { font: 500 .78rem/1.4 var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+    .card .url { font: 500 .78rem/1.4 var(--mono); color: var(--link); overflow-wrap: anywhere; }
     .meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; font-size: .85rem; color: var(--muted); }
     .lang { display: inline-flex; align-items: center; gap: .35rem; }
     .lang::before { content: ""; width: .65rem; height: .65rem; border-radius: 50%; background: var(--dot, var(--muted)); }
@@ -250,15 +319,15 @@
       display: inline-block; padding: .2rem .55rem; border-radius: 999px;
       font: 500 .72rem/1.4 var(--mono); color: var(--muted); background: var(--surface-2); border: 1px solid var(--border);
     }
-    .tag.live { color: #15803d; background: rgb(34 197 94 / .12); border-color: rgb(34 197 94 / .3); }
+    .tag.live { color: #126e33; background: rgb(34 197 94 / .12); border-color: rgb(34 197 94 / .3); }
     :root[data-theme="dark"] .tag.live { color: #4ade80; }
     @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tag.live { color: #4ade80; } }
     .card .links { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: .5rem 1rem; font-size: .88rem; font-weight: 600; }
-    .card .links a { text-decoration: none; }
+    .card .links a { color: var(--link); text-decoration: none; }
     .card .links a:hover { text-decoration: underline; }
 
     .featured .card { padding: 1.5rem; }
-    .featured .card h3 { font-size: 1.2rem; }
+    .featured .card h3 { font-size: 1.4rem; }
 
     /* ---------- About / skills ---------- */
     .about { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
@@ -268,18 +337,52 @@
     .chips li { padding: .35rem .7rem; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); font-size: .88rem; }
     .metrics { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); margin-block: 1.5rem; }
     .metric { padding: 1.1rem 1.2rem; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); }
-    .metric strong { display: block; font-size: 1.35rem; letter-spacing: -.02em; }
+    .metric strong { display: block; font-family: var(--serif); font-size: 1.6rem; font-weight: 600; letter-spacing: -.02em; }
     .metric span { display: block; margin-block-start: .25rem; color: var(--muted); font-size: .88rem; }
     .about-contact { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; margin-block-start: 1rem; }
 
     /* ---------- Footer ---------- */
-    footer { border-top: 1px solid var(--border); padding-block: 2rem 3rem; margin-block-start: 2rem; color: var(--muted); font-size: .9rem; }
+    footer { background: var(--band); padding-block: 2rem 3rem; color: var(--band-muted); font-size: .9rem; }
     footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
     footer nav { display: flex; flex-wrap: wrap; gap: 1rem; }
-    footer a { color: var(--muted); }
-    footer a:hover { color: var(--text); }
+    footer a { color: var(--band-muted); }
+    footer a:hover { color: var(--band-text); }
 
     .note { font-size: .85rem; color: var(--muted); margin-block-start: 1rem; }
+
+    /* ---------- Roll-through bands ---------- */
+    #sites { background: var(--surface); }
+    #sites .card { background: var(--surface-2); box-shadow: none; }
+    #projects { background: var(--band); color: var(--band-text); }
+    #projects .section-head p, #projects .card .desc, #projects .meta { color: var(--band-muted); }
+    #projects .card { background: var(--band-surface); border-color: color-mix(in srgb, var(--band-text) 16%, transparent); box-shadow: none; }
+    #projects .card h3 a { color: var(--band-text); }
+    #projects .card:hover, #projects .card:focus-within { border-color: var(--tan); }
+    #projects .card:has(h3 a:focus-visible) { outline-color: var(--tan); }
+    #projects .tag { background: transparent; color: var(--band-muted); border-color: color-mix(in srgb, var(--band-text) 22%, transparent); }
+    #projects .tag.live { color: #4ade80; background: rgb(34 197 94 / .12); border-color: rgb(34 197 94 / .3); }
+    #projects .more { color: var(--tan); }
+    /* band is dark in both themes: small links/counts on band cards use --band-link.
+       Light theme: --tan-l computes 4.35:1 on the card surface (< AA 4.5), so
+       --band-link-l is an AA-safe tan (4.82:1 on the card surface); dark theme
+       --band-link-d carries the --tan-d value (6.11:1 on the card surface).
+       Dormant today: #projects cards render no .links/.count elements yet. */
+    #projects .card .links a, #projects .count { color: var(--band-link); }
+    .about-top { display: grid; gap: 1.5rem; grid-template-columns: 1fr; align-items: start; margin-block-end: .5rem; }
+    @media (min-width: 52rem) { .about-top { grid-template-columns: auto 1fr; } .about-top .section-head { margin-block-end: 0; } }
+
+    /* ---------- Scroll reveals (arrive by moving, not fading) ---------- */
+    /* Hidden state requires BOTH html.js (set pre-paint by the head script)
+       and no-preference motion, so no-JS and reduced-motion readers always
+       see the content; the reveal script reveals everything if
+       IntersectionObserver is unavailable. */
+    @media (prefers-reduced-motion: no-preference) {
+      html.js .rv { transform: translateY(30px); opacity: 0; }
+      html.js .rv.in { transform: none; opacity: 1; transition: transform .95s var(--ease), opacity .7s ease; }
+      html.js .grid li:nth-child(2) .rv.in, html.js .hero-cards .rv.in:nth-child(2), html.js .about > .rv.in:nth-child(2) { transition-delay: .08s; }
+      html.js .grid li:nth-child(3) .rv.in, html.js .hero-cards .rv.in:nth-child(3), html.js .about > .rv.in:nth-child(3) { transition-delay: .16s; }
+      html.js .grid li:nth-child(4) .rv.in { transition-delay: .24s; }
+    }
 
     /* ---------- Veer chatbot ---------- */
     .veer-fab {
@@ -333,7 +436,7 @@
     .veer-msg.bot { align-self: flex-start; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
     .veer-msg.user { align-self: flex-end; background: var(--accent); color: var(--on-accent); }
     .veer-msg a { color: inherit; text-decoration: underline; }
-    .veer-msg.bot a { color: var(--accent); }
+    .veer-msg.bot a { color: var(--link); }
     /* Typing indicator: reuses the bot bubble treatment so it reads as "Veer is
        replying" rather than a new UI element, with three bouncing dots in place
        of text while the reply is prepared. */
@@ -358,7 +461,7 @@
     /* Small persistent chip that re-opens the full suggestion row after it's
        been cleared, so topic discovery isn't a first-open-only affordance. */
     .veer-chip.veer-chip-more {
-      background: transparent; border-style: dashed; color: var(--accent);
+      background: transparent; border-style: dashed; color: var(--link);
       display: inline-flex; align-items: center; gap: .3rem;
     }
     .veer-chip.veer-chip-more svg { width: .8rem; height: .8rem; }
@@ -367,7 +470,7 @@
       flex: 1; min-width: 0; padding: .6rem .8rem; border-radius: var(--radius-sm); border: 1px solid var(--border);
       background: var(--bg); color: var(--text); font: inherit;
     }
-    .veer-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .veer-input:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
     .veer-send {
       flex: none; display: inline-grid; place-items: center; width: 2.6rem; border-radius: var(--radius-sm);
       border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); cursor: pointer;
@@ -401,14 +504,38 @@
   <main id="main">
     <!-- Hero -->
     <section class="hero" aria-labelledby="hero-title">
+      <canvas id="hero3d" aria-hidden="true"></canvas>
       <div class="wrap">
-        <img class="avatar" src="https://avatars.githubusercontent.com/u/57240576?v=4&s=240" width="160" height="160" alt="Portrait of Veeresh Bikkaneti">
-        <div>
-          <span class="eyebrow">Open to opportunities</span>
-          <span class="eyebrow">Deep in open-source builds — Airlock, calorie tracking, more</span>
-          <h1 id="hero-title">Hi, I'm Veeresh. <span class="grad">I help teams build the right thing and build it right.</span></h1>
-          <p class="lede">Business Analyst, Product Owner, Certified ScrumMaster, and QA Architect with 20+ years in enterprise software delivery. I turn business needs into clear requirements and backlogs, keep Agile teams moving, and design the test strategy and automation that make sure what ships is what was asked for — increasingly with AI-assisted analysis and testing.</p>
-          <div class="cta">
+        <span class="eyebrow">Open to opportunities</span>
+        <span class="eyebrow">Deep in open-source builds — Airlock, calorie tracking, more</span>
+        <p class="role-kicker">Business Analyst · Product Owner · Scrum Master · QA Architect</p>
+        <h1 id="hero-title"><span class="sr-only">Hi, I'm Veeresh. </span><span class="h1-mask"><span class="d1">I help </span></span><span class="h1-mask"><span class="d2 h1-tan">teams </span></span><span class="h1-mask"><span class="d3">build the </span></span><span class="h1-mask"><span class="d4">right thing </span></span><span class="h1-mask"><span class="d5 h1-tail">and build it right.</span></span></h1>
+        <p class="lede">Business Analyst, Product Owner, Certified ScrumMaster, and QA Architect with 20+ years in enterprise software delivery. I turn business needs into clear requirements and backlogs, keep Agile teams moving, and design the test strategy and automation that make sure what ships is what was asked for — increasingly with AI-assisted analysis and testing.</p>
+        <ul class="stats" aria-label="At a glance">
+            <li><strong>20+</strong> years in software delivery</li>
+            <li>Certified ScrumMaster</li>
+            <li><strong id="stat-sites">4</strong> live sites</li>
+            <li><strong id="stat-repos">45+</strong> public repos</li>
+            <li>Lincoln, Nebraska</li>
+          </ul>
+        <div class="hero-cards">
+          <article class="hcard rv">
+            <span class="k">Live sites</span>
+            <p>Everything I host on GitHub Pages — tools, learning resources, and my blog.</p>
+            <a href="#sites">Explore <span class="arr" aria-hidden="true">→</span></a>
+          </article>
+          <article class="hcard rv">
+            <span class="k">Selected work</span>
+            <p>Recent work in AI tooling, test automation, and developer productivity.</p>
+            <a href="#projects">View projects <span class="arr" aria-hidden="true">→</span></a>
+          </article>
+          <article class="hcard rv">
+            <span class="k">About</span>
+            <p>Principal QA Architect and Agile delivery lead with 20+ years across property insurance, government education, healthcare, and logistics.</p>
+            <a href="#about">Learn more <span class="arr" aria-hidden="true">→</span></a>
+          </article>
+        </div>
+        <div class="cta">
             <a class="btn primary" href="#sites">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
               Explore live sites
@@ -426,21 +553,13 @@
               LinkedIn
             </a>
           </div>
-          <ul class="stats" aria-label="At a glance">
-            <li><strong>20+</strong> years in software delivery</li>
-            <li>Certified ScrumMaster</li>
-            <li><strong id="stat-sites">4</strong> live sites</li>
-            <li><strong id="stat-repos">45+</strong> public repos</li>
-            <li>Lincoln, Nebraska</li>
-          </ul>
-        </div>
       </div>
     </section>
 
     <!-- Live GitHub Pages sites -->
     <section id="sites" aria-labelledby="sites-title">
       <div class="wrap">
-        <div class="section-head">
+        <div class="section-head rv">
           <div>
             <h2 id="sites-title">Live sites <span class="count" id="sites-count">4</span></h2>
             <p>Everything I host on GitHub Pages — tools, learning resources, and my blog.</p>
@@ -449,7 +568,7 @@
 
         <ul class="grid featured" id="sites-grid">
           <li>
-            <article class="card" data-repo="techtalkwith-veeresh">
+            <article class="card rv" data-repo="techtalkwith-veeresh">
               <div class="card-top">
                 <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></svg></span>
                 <div><h3><a href="https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/">Tech Talk with Veeresh</a></h3></div>
@@ -461,7 +580,7 @@
             </article>
           </li>
           <li>
-            <article class="card" data-repo="system-design-and-architecture">
+            <article class="card rv" data-repo="system-design-and-architecture">
               <div class="card-top">
                 <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="8.5" y="14" width="7" height="7" rx="1"/><path d="M6.5 10v2h11v-2M12 12v2"/></svg></span>
                 <div><h3><a href="https://veeresh-bikkaneti.github.io/system-design-and-architecture/">System Design Mastery</a></h3></div>
@@ -473,7 +592,7 @@
             </article>
           </li>
           <li>
-            <article class="card" data-repo="TrafficTicketRouter">
+            <article class="card rv" data-repo="TrafficTicketRouter">
               <div class="card-top">
                 <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3z"/><path d="M9 3v15M15 6v15"/></svg></span>
                 <div><h3><a href="https://veeresh-bikkaneti.github.io/TrafficTicketRouter/">TicketRouter</a></h3></div>
@@ -489,7 +608,7 @@
         <h3 class="sr-only">Testing guides and framework demos</h3>
         <ul class="grid" id="sites-grid-more" style="margin-block-start:1rem">
           <li>
-            <article class="card" data-repo="beginnersguidefortesting">
+            <article class="card rv" data-repo="beginnersguidefortesting">
               <div class="card-top">
                 <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></span>
                 <div><h3><a href="https://veeresh-bikkaneti.github.io/beginnersguidefortesting/">Beginner's Guide to Testing</a></h3></div>
@@ -506,7 +625,7 @@
     <!-- Selected repositories -->
     <section id="projects" aria-labelledby="projects-title">
       <div class="wrap">
-        <div class="section-head">
+        <div class="section-head rv">
           <div>
             <h2 id="projects-title">Selected projects</h2>
             <p>Recent work in AI tooling, test automation, and developer productivity.</p>
@@ -515,56 +634,56 @@
         </div>
         <ul class="grid">
           <li>
-            <article class="card">
+            <article class="card rv">
               <h3><a href="https://github.com/veeresh-bikkaneti/airlock">airlock</a></h3>
               <p class="desc">Hardened, single-instance local AI platform for Windows — Ollama/vLLM backend chooser, firewall-guarded, audit-logged, with policy-gated cloud fallback.</p>
               <div class="meta"><span class="lang" style="--dot:#5391fe">PowerShell</span><span class="tag">MIT</span></div>
             </article>
           </li>
           <li>
-            <article class="card">
+            <article class="card rv">
               <h3><a href="https://github.com/veeresh-bikkaneti/cypress-playwright">cypress-playwright</a></h3>
               <p class="desc">Cypress-to-Playwright migration toolkit: portable AGENTS.md and agent skills for Copilot, Claude Code, Cursor, and more, plus a dual-framework demo suite.</p>
               <div class="meta"><span class="lang" style="--dot:#3178c6">TypeScript</span><span class="tag">MIT</span></div>
             </article>
           </li>
           <li>
-            <article class="card">
+            <article class="card rv">
               <h3><a href="https://github.com/veeresh-bikkaneti/azdo-ai-toolkit">azdo-ai-toolkit</a></h3>
               <p class="desc">AI-assisted toolkit for Azure DevOps workflows.</p>
               <div class="meta"><span class="lang" style="--dot:#3178c6">TypeScript</span></div>
             </article>
           </li>
           <li>
-            <article class="card">
+            <article class="card rv">
               <h3><a href="https://github.com/veeresh-bikkaneti/LLMcouncil">LLMcouncil</a></h3>
               <p class="desc">VS Code extension that brings multi-agent AI analysis — a council of LLMs — into your editor.</p>
               <div class="meta"><span class="lang" style="--dot:#3178c6">TypeScript</span></div>
             </article>
           </li>
           <li>
-            <article class="card">
+            <article class="card rv">
               <h3><a href="https://github.com/veeresh-bikkaneti/cypress-qa-ai-workforce">cypress-qa-ai-workforce</a></h3>
               <p class="desc">Drop-in Copilot instructions, agent rules, and reusable prompts that turn a Cypress project into an AI-assisted QA workspace.</p>
               <div class="meta"><span class="lang" style="--dot:#f1e05a">JavaScript</span></div>
             </article>
           </li>
           <li>
-            <article class="card">
+            <article class="card rv">
               <h3><a href="https://github.com/veeresh-bikkaneti/cucumberBDDParallel">cucumberBDDParallel</a></h3>
               <p class="desc">Cucumber-JVM BDD framework running features in parallel with TestNG and Cluecumber reports.</p>
               <div class="meta"><span class="lang" style="--dot:#b07219">Java</span><span class="tag">★ 2</span></div>
             </article>
           </li>
           <li>
-            <article class="card" data-repo="SeleniumTestNGParallelExtentReports">
+            <article class="card rv" data-repo="SeleniumTestNGParallelExtentReports">
               <h3><a href="https://github.com/veeresh-bikkaneti/SeleniumTestNGParallelExtentReports">SeleniumTestNGParallelExtentReports</a></h3>
               <p class="desc">Parallel Selenium execution with TestNG and Extent Reports for readable test results.</p>
               <div class="meta"><span class="lang" style="--dot:#b07219">Java</span></div>
             </article>
           </li>
           <li>
-            <article class="card" data-repo="SpecFlowDataTable">
+            <article class="card rv" data-repo="SpecFlowDataTable">
               <h3><a href="https://github.com/veeresh-bikkaneti/SpecFlowDataTable">SpecFlowDataTable</a></h3>
               <p class="desc">Working with Gherkin data tables in SpecFlow step definitions (C# / .NET BDD).</p>
               <div class="meta"><span class="lang" style="--dot:#178600">C#</span></div>
@@ -576,13 +695,16 @@
 
 <section id="about" aria-labelledby="about-title">
       <div class="wrap">
-        <div class="section-head">
+        <div class="about-top">
+          <img class="avatar" loading="lazy" src="https://avatars.githubusercontent.com/u/57240576?v=4&s=240" width="160" height="160" alt="Portrait of Veeresh Bikkaneti">
+          <div class="section-head rv">
           <div>
             <h2 id="about-title">About</h2>
             <p>Principal QA Architect and Agile delivery lead with 20+ years across property insurance, government education, healthcare, and logistics. Dual-threaded: Product Owner / Business Analyst on the strategy side; Principal Test Architect / SDET Lead on the engineering side. I have worked as Business Analyst, Product Owner, Scrum Master, Project Coordinator, QA Manager, QA Lead, QA Architect, and SDET — so I work across the whole lifecycle, from requirements and backlog through delivery and release.</p>
           </div>
+          </div>
         </div>
-        <div class="metrics" aria-label="Career highlights">
+        <div class="metrics rv" aria-label="Career highlights">
           <div class="metric"><strong>35–40%</strong><span>Release reliability improvement</span></div>
           <div class="metric"><strong>60%</strong><span>Faster test execution</span></div>
           <div class="metric"><strong>95%</strong><span>API coverage on critical flows</span></div>
@@ -591,15 +713,15 @@
           <div class="metric"><strong>80%</strong><span>Playwright test performance gain</span></div>
         </div>
         <div class="about">
-          <div class="panel">
+          <div class="panel rv">
             <h3>Business analysis & delivery</h3>
             <ul class="chips"><li>Product ownership</li><li>Requirements elicitation</li><li>User stories & acceptance criteria</li><li>Backlog management</li><li>SAFe PI Planning</li><li>Agile / Scrum</li><li>Azure DevOps</li></ul>
           </div>
-          <div class="panel">
+          <div class="panel rv">
             <h3>Test automation</h3>
             <ul class="chips"><li>Test strategy</li><li>CI/CD quality gates</li><li>Playwright</li><li>Cypress</li><li>Selenium</li><li>Cucumber / SpecFlow</li><li>TestNG</li><li>RestAssured</li><li>Postman</li></ul>
           </div>
-          <div class="panel">
+          <div class="panel rv">
             <h3>AI in quality engineering</h3>
             <ul class="chips"><li>AI test generation</li><li>Self-healing locators</li><li>Local LLMs</li><li>Agentic QA workflows</li><li>Center of Excellence</li></ul>
           </div>
@@ -1304,6 +1426,35 @@
         ask(input.value);
       });
     })();
+  </script>
+  <!-- Scroll reveals: dependency-free. The hidden .rv state is gated on
+       html.js + prefers-reduced-motion: no-preference in CSS; if
+       IntersectionObserver is missing we reveal everything outright. -->
+  <script>
+    (() => {
+      const els = document.querySelectorAll(".rv");
+      if (!els.length) return;
+      if (!("IntersectionObserver" in window)) { els.forEach((el) => el.classList.add("in")); return; }
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+        }
+      }, { threshold: 0.18 });
+      els.forEach((el) => io.observe(el));
+    })();
+  </script>
+  <!-- Hero 3D: lazy-load the Three.js scene off the critical path, and
+       skip it entirely for data-saver or low-end small/touch devices. -->
+  <script type="module">
+    const conn = navigator.connection;
+    const lowEnd = (navigator.hardwareConcurrency || 99) < 4 || (navigator.deviceMemory || 99) < 2;
+    const smallTouch = window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 832;
+    if (!(conn && conn.saveData) && !(lowEnd && smallTouch)) {
+      const startHero3D = () => import("./assets/hero3d.js").then((m) => m.initHero3D()).catch(() => {});
+      if ("requestIdleCallback" in window) requestIdleCallback(startHero3D, { timeout: 1200 });
+      else setTimeout(startHero3D, 300);
+    }
   </script>
   <script src="assets/thunder-guard.js?v=9" defer></script>
 </body>
