@@ -151,6 +151,10 @@
     :focus-visible { outline: 3px solid var(--link); outline-offset: 3px; border-radius: 6px; }
     /* focus on dark surfaces (hero cards, dark band, footer): --link is too dark there; tan computes 4.78:1 light / 7.73:1 dark */
     .hcard a:focus-visible, #projects .more:focus-visible, footer a:focus-visible { outline-color: var(--tan); }
+    /* the fixed Veer FAB floats over light AND dark surfaces: tan outline alone fails on cream (2.43:1)
+       and --link alone fails on charcoal (2.33:1), so the focus state pairs the tan outline
+       with a dark shadow ring — the combined indicator passes 3:1 on both */
+    .veer-fab:focus-visible { outline-color: var(--tan); box-shadow: 0 0 0 6px rgb(35 37 41 / .82); }
     ::selection { background: var(--accent); color: var(--on-accent); }
 
     .wrap { width: min(100% - 2 * var(--gutter), var(--max)); margin-inline: auto; }
@@ -460,7 +464,7 @@
       flex: 1; min-width: 0; padding: .6rem .8rem; border-radius: var(--radius-sm); border: 1px solid var(--border);
       background: var(--bg); color: var(--text); font: inherit;
     }
-    .veer-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .veer-input:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
     .veer-send {
       flex: none; display: inline-grid; place-items: center; width: 2.6rem; border-radius: var(--radius-sm);
       border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); cursor: pointer;
