@@ -150,7 +150,7 @@
     p { margin: 0; text-wrap: pretty; }
     :focus-visible { outline: 3px solid var(--link); outline-offset: 3px; border-radius: 6px; }
     /* focus on dark surfaces (hero cards, dark band, footer): --link is too dark there; tan computes 4.78:1 light / 7.73:1 dark */
-    .hcard a:focus-visible, #projects .more:focus-visible, footer a:focus-visible { outline-color: var(--tan); }
+    .hcard a:focus-visible, #projects .more:focus-visible, #projects .card .links a:focus-visible, footer a:focus-visible { outline-color: var(--tan); }
     /* the fixed Veer FAB floats over light AND dark surfaces: tan outline alone fails on cream (2.43:1)
        and --link alone fails on charcoal (2.33:1), so the focus state pairs the tan outline
        with a dark shadow ring — the combined indicator passes 3:1 on both */
@@ -360,8 +360,10 @@
     #projects .tag { background: transparent; color: var(--band-muted); border-color: color-mix(in srgb, var(--band-text) 22%, transparent); }
     #projects .tag.live { color: #4ade80; background: rgb(34 197 94 / .12); border-color: rgb(34 197 94 / .3); }
     #projects .more { color: var(--tan); }
-    /* band is dark in both themes: links/counts there keep the light-on-dark tan */
-    #projects .card .links a, #projects .count { color: var(--tan); }
+    /* band is dark in both themes: links/counts there keep the light-on-dark tan.
+       Light theme: tan-l 4.35:1 on the card surface < AA 4.5, so small band links
+       use an AA-safe tan (4.82:1); dark theme keeps --tan-d (7.7:1). */
+    #projects .card .links a, #projects .count { color: light-dark(#b5925e, var(--tan-d)); }
     .about-top { display: grid; gap: 1.5rem; grid-template-columns: 1fr; align-items: start; margin-block-end: .5rem; }
     @media (min-width: 52rem) { .about-top { grid-template-columns: auto 1fr; } .about-top .section-head { margin-block-end: 0; } }
 
