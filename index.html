@@ -480,14 +480,38 @@
   <main id="main">
     <!-- Hero -->
     <section class="hero" aria-labelledby="hero-title">
+      <canvas id="hero3d" aria-hidden="true"></canvas>
       <div class="wrap">
-        <img class="avatar" src="https://avatars.githubusercontent.com/u/57240576?v=4&s=240" width="160" height="160" alt="Portrait of Veeresh Bikkaneti">
-        <div>
-          <span class="eyebrow">Open to opportunities</span>
-          <span class="eyebrow">Deep in open-source builds — Airlock, calorie tracking, more</span>
-          <h1 id="hero-title">Hi, I'm Veeresh. <span class="grad">I help teams build the right thing and build it right.</span></h1>
-          <p class="lede">Business Analyst, Product Owner, Certified ScrumMaster, and QA Architect with 20+ years in enterprise software delivery. I turn business needs into clear requirements and backlogs, keep Agile teams moving, and design the test strategy and automation that make sure what ships is what was asked for — increasingly with AI-assisted analysis and testing.</p>
-          <div class="cta">
+        <span class="eyebrow">Open to opportunities</span>
+        <span class="eyebrow">Deep in open-source builds — Airlock, calorie tracking, more</span>
+        <p class="role-kicker">Business Analyst · Product Owner · Scrum Master · QA Architect</p>
+        <h1 id="hero-title"><span class="sr-only">Hi, I'm Veeresh. </span><span class="h1-mask"><span class="d1">I help </span></span><span class="h1-mask"><span class="d2 h1-tan">teams </span></span><span class="h1-mask"><span class="d3">build the </span></span><span class="h1-mask"><span class="d4">right thing </span></span><span class="h1-mask"><span class="d5 h1-tail">and build it right.</span></span></h1>
+        <p class="lede">Business Analyst, Product Owner, Certified ScrumMaster, and QA Architect with 20+ years in enterprise software delivery. I turn business needs into clear requirements and backlogs, keep Agile teams moving, and design the test strategy and automation that make sure what ships is what was asked for — increasingly with AI-assisted analysis and testing.</p>
+        <ul class="stats" aria-label="At a glance">
+            <li><strong>20+</strong> years in software delivery</li>
+            <li>Certified ScrumMaster</li>
+            <li><strong id="stat-sites">4</strong> live sites</li>
+            <li><strong id="stat-repos">45+</strong> public repos</li>
+            <li>Lincoln, Nebraska</li>
+          </ul>
+        <div class="hero-cards">
+          <article class="hcard rv">
+            <span class="k">Live sites</span>
+            <p>Everything I host on GitHub Pages — tools, learning resources, and my blog.</p>
+            <a href="#sites">Explore <span class="arr" aria-hidden="true">→</span></a>
+          </article>
+          <article class="hcard rv">
+            <span class="k">Selected work</span>
+            <p>Recent work in AI tooling, test automation, and developer productivity.</p>
+            <a href="#projects">View projects <span class="arr" aria-hidden="true">→</span></a>
+          </article>
+          <article class="hcard rv">
+            <span class="k">About</span>
+            <p>Principal QA Architect and Agile delivery lead with 20+ years across property insurance, government education, healthcare, and logistics.</p>
+            <a href="#about">Learn more <span class="arr" aria-hidden="true">→</span></a>
+          </article>
+        </div>
+        <div class="cta">
             <a class="btn primary" href="#sites">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
               Explore live sites
@@ -505,21 +529,13 @@
               LinkedIn
             </a>
           </div>
-          <ul class="stats" aria-label="At a glance">
-            <li><strong>20+</strong> years in software delivery</li>
-            <li>Certified ScrumMaster</li>
-            <li><strong id="stat-sites">4</strong> live sites</li>
-            <li><strong id="stat-repos">45+</strong> public repos</li>
-            <li>Lincoln, Nebraska</li>
-          </ul>
-        </div>
       </div>
     </section>
 
     <!-- Live GitHub Pages sites -->
     <section id="sites" aria-labelledby="sites-title">
       <div class="wrap">
-        <div class="section-head">
+        <div class="section-head rv">
           <div>
             <h2 id="sites-title">Live sites <span class="count" id="sites-count">4</span></h2>
             <p>Everything I host on GitHub Pages — tools, learning resources, and my blog.</p>
@@ -528,7 +544,7 @@
 
         <ul class="grid featured" id="sites-grid">
           <li>
-            <article class="card" data-repo="techtalkwith-veeresh">
+            <article class="card rv" data-repo="techtalkwith-veeresh">
               <div class="card-top">
                 <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></svg></span>
                 <div><h3><a href="https://veeresh-bikkaneti.github.io/techtalkwith-veeresh/">Tech Talk with Veeresh</a></h3></div>
@@ -540,7 +556,7 @@
             </article>
           </li>
           <li>
-            <article class="card" data-repo="system-design-and-architecture">
+            <article class="card rv" data-repo="system-design-and-architecture">
               <div class="card-top">
                 <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="8.5" y="14" width="7" height="7" rx="1"/><path d="M6.5 10v2h11v-2M12 12v2"/></svg></span>
                 <div><h3><a href="https://veeresh-bikkaneti.github.io/system-design-and-architecture/">System Design Mastery</a></h3></div>
@@ -552,7 +568,7 @@
             </article>
           </li>
           <li>
-            <article class="card" data-repo="TrafficTicketRouter">
+            <article class="card rv" data-repo="TrafficTicketRouter">
               <div class="card-top">
                 <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3z"/><path d="M9 3v15M15 6v15"/></svg></span>
                 <div><h3><a href="https://veeresh-bikkaneti.github.io/TrafficTicketRouter/">TicketRouter</a></h3></div>
@@ -568,7 +584,7 @@
         <h3 class="sr-only">Testing guides and framework demos</h3>
         <ul class="grid" id="sites-grid-more" style="margin-block-start:1rem">
           <li>
-            <article class="card" data-repo="beginnersguidefortesting">
+            <article class="card rv" data-repo="beginnersguidefortesting">
               <div class="card-top">
                 <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></span>
                 <div><h3><a href="https://veeresh-bikkaneti.github.io/beginnersguidefortesting/">Beginner's Guide to Testing</a></h3></div>
@@ -585,7 +601,7 @@
     <!-- Selected repositories -->
     <section id="projects" aria-labelledby="projects-title">
       <div class="wrap">
-        <div class="section-head">
+        <div class="section-head rv">
           <div>
             <h2 id="projects-title">Selected projects</h2>
             <p>Recent work in AI tooling, test automation, and developer productivity.</p>
@@ -594,56 +610,56 @@
         </div>
         <ul class="grid">
           <li>
-            <article class="card">
+            <article class="card rv">
               <h3><a href="https://github.com/veeresh-bikkaneti/airlock">airlock</a></h3>
               <p class="desc">Hardened, single-instance local AI platform for Windows — Ollama/vLLM backend chooser, firewall-guarded, audit-logged, with policy-gated cloud fallback.</p>
               <div class="meta"><span class="lang" style="--dot:#5391fe">PowerShell</span><span class="tag">MIT</span></div>
             </article>
           </li>
           <li>
-            <article class="card">
+            <article class="card rv">
               <h3><a href="https://github.com/veeresh-bikkaneti/cypress-playwright">cypress-playwright</a></h3>
               <p class="desc">Cypress-to-Playwright migration toolkit: portable AGENTS.md and agent skills for Copilot, Claude Code, Cursor, and more, plus a dual-framework demo suite.</p>
               <div class="meta"><span class="lang" style="--dot:#3178c6">TypeScript</span><span class="tag">MIT</span></div>
             </article>
           </li>
           <li>
-            <article class="card">
+            <article class="card rv">
               <h3><a href="https://github.com/veeresh-bikkaneti/azdo-ai-toolkit">azdo-ai-toolkit</a></h3>
               <p class="desc">AI-assisted toolkit for Azure DevOps workflows.</p>
               <div class="meta"><span class="lang" style="--dot:#3178c6">TypeScript</span></div>
             </article>
           </li>
           <li>
-            <article class="card">
+            <article class="card rv">
               <h3><a href="https://github.com/veeresh-bikkaneti/LLMcouncil">LLMcouncil</a></h3>
               <p class="desc">VS Code extension that brings multi-agent AI analysis — a council of LLMs — into your editor.</p>
               <div class="meta"><span class="lang" style="--dot:#3178c6">TypeScript</span></div>
             </article>
           </li>
           <li>
-            <article class="card">
+            <article class="card rv">
               <h3><a href="https://github.com/veeresh-bikkaneti/cypress-qa-ai-workforce">cypress-qa-ai-workforce</a></h3>
               <p class="desc">Drop-in Copilot instructions, agent rules, and reusable prompts that turn a Cypress project into an AI-assisted QA workspace.</p>
               <div class="meta"><span class="lang" style="--dot:#f1e05a">JavaScript</span></div>
             </article>
           </li>
           <li>
-            <article class="card">
+            <article class="card rv">
               <h3><a href="https://github.com/veeresh-bikkaneti/cucumberBDDParallel">cucumberBDDParallel</a></h3>
               <p class="desc">Cucumber-JVM BDD framework running features in parallel with TestNG and Cluecumber reports.</p>
               <div class="meta"><span class="lang" style="--dot:#b07219">Java</span><span class="tag">★ 2</span></div>
             </article>
           </li>
           <li>
-            <article class="card" data-repo="SeleniumTestNGParallelExtentReports">
+            <article class="card rv" data-repo="SeleniumTestNGParallelExtentReports">
               <h3><a href="https://github.com/veeresh-bikkaneti/SeleniumTestNGParallelExtentReports">SeleniumTestNGParallelExtentReports</a></h3>
               <p class="desc">Parallel Selenium execution with TestNG and Extent Reports for readable test results.</p>
               <div class="meta"><span class="lang" style="--dot:#b07219">Java</span></div>
             </article>
           </li>
           <li>
-            <article class="card" data-repo="SpecFlowDataTable">
+            <article class="card rv" data-repo="SpecFlowDataTable">
               <h3><a href="https://github.com/veeresh-bikkaneti/SpecFlowDataTable">SpecFlowDataTable</a></h3>
               <p class="desc">Working with Gherkin data tables in SpecFlow step definitions (C# / .NET BDD).</p>
               <div class="meta"><span class="lang" style="--dot:#178600">C#</span></div>
@@ -655,13 +671,16 @@
 
 <section id="about" aria-labelledby="about-title">
       <div class="wrap">
-        <div class="section-head">
+        <div class="about-top">
+          <img class="avatar" src="https://avatars.githubusercontent.com/u/57240576?v=4&s=240" width="160" height="160" alt="Portrait of Veeresh Bikkaneti">
+          <div class="section-head rv">
           <div>
             <h2 id="about-title">About</h2>
             <p>Principal QA Architect and Agile delivery lead with 20+ years across property insurance, government education, healthcare, and logistics. Dual-threaded: Product Owner / Business Analyst on the strategy side; Principal Test Architect / SDET Lead on the engineering side. I have worked as Business Analyst, Product Owner, Scrum Master, Project Coordinator, QA Manager, QA Lead, QA Architect, and SDET — so I work across the whole lifecycle, from requirements and backlog through delivery and release.</p>
           </div>
+          </div>
         </div>
-        <div class="metrics" aria-label="Career highlights">
+        <div class="metrics rv" aria-label="Career highlights">
           <div class="metric"><strong>35–40%</strong><span>Release reliability improvement</span></div>
           <div class="metric"><strong>60%</strong><span>Faster test execution</span></div>
           <div class="metric"><strong>95%</strong><span>API coverage on critical flows</span></div>
@@ -670,15 +689,15 @@
           <div class="metric"><strong>80%</strong><span>Playwright test performance gain</span></div>
         </div>
         <div class="about">
-          <div class="panel">
+          <div class="panel rv">
             <h3>Business analysis & delivery</h3>
             <ul class="chips"><li>Product ownership</li><li>Requirements elicitation</li><li>User stories & acceptance criteria</li><li>Backlog management</li><li>SAFe PI Planning</li><li>Agile / Scrum</li><li>Azure DevOps</li></ul>
           </div>
-          <div class="panel">
+          <div class="panel rv">
             <h3>Test automation</h3>
             <ul class="chips"><li>Test strategy</li><li>CI/CD quality gates</li><li>Playwright</li><li>Cypress</li><li>Selenium</li><li>Cucumber / SpecFlow</li><li>TestNG</li><li>RestAssured</li><li>Postman</li></ul>
           </div>
-          <div class="panel">
+          <div class="panel rv">
             <h3>AI in quality engineering</h3>
             <ul class="chips"><li>AI test generation</li><li>Self-healing locators</li><li>Local LLMs</li><li>Agentic QA workflows</li><li>Center of Excellence</li></ul>
           </div>
@@ -1383,6 +1402,28 @@
         ask(input.value);
       });
     })();
+  </script>
+  <!-- Scroll reveals: dependency-free; the hidden state only exists under
+       prefers-reduced-motion: no-preference, so no-JS/reduced-motion readers
+       always see the content. -->
+  <script>
+    (() => {
+      const els = document.querySelectorAll(".rv");
+      if (!els.length || !("IntersectionObserver" in window)) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+        }
+      }, { threshold: 0.18 });
+      els.forEach((el) => io.observe(el));
+    })();
+  </script>
+  <!-- Hero 3D: lazy-load the Three.js scene off the critical path. -->
+  <script type="module">
+    const startHero3D = () => import("./assets/hero3d.js").then((m) => m.initHero3D()).catch(() => {});
+    if ("requestIdleCallback" in window) requestIdleCallback(startHero3D, { timeout: 1200 });
+    else setTimeout(startHero3D, 300);
   </script>
   <script src="assets/thunder-guard.js?v=9" defer></script>
 </body>
