@@ -43,12 +43,13 @@
       --surface-2-l: #f0e8d8; --surface-2-d: #38342c;
       --text-l: #232529;      --text-d: #ece5d3;
       --muted-l: #5c5546;     --muted-d: #bdb29a;
-      --border-l: #d8cdb4;    --border-d: #4a463c;
+      --border-l: #c9ba97;    --border-d: #4a463c;
       --accent-l: #ac8a5c;    --accent-d: #c9a876;   /* tan — the editorial accent */
       --accent-2-l: #232529;  --accent-2-d: #e2cda4;
       --on-accent-l: #26241f; --on-accent-d: #26241f;
       --glow-l: rgb(172 138 92 / .12); --glow-d: rgb(201 168 118 / .10);
       --tan-l: #ac8a5c;       --tan-d: #c9a876;
+      --link-l: #75582e;      --link-d: #c9a876;   /* text tan — AA on cream; fills keep --tan */
       --band-l: #232529;      --band-d: #1c1a17;
       --band-surface-l: #2a2c31; --band-surface-d: #302d27;
       --band-text-l: #ece5d3; --band-text-d: #ece5d3;
@@ -60,7 +61,7 @@
       --bg: var(--bg-l); --surface: var(--surface-l); --surface-2: var(--surface-2-l);
       --text: var(--text-l); --muted: var(--muted-l); --border: var(--border-l);
       --accent: var(--accent-l); --accent-2: var(--accent-2-l); --on-accent: var(--on-accent-l); --glow: var(--glow-l);
-      --tan: var(--tan-l); --band: var(--band-l); --band-surface: var(--band-surface-l);
+      --link: var(--link-l); --tan: var(--tan-l); --band: var(--band-l); --band-surface: var(--band-surface-l);
       --band-text: var(--band-text-l); --band-muted: var(--band-muted-l); --hero-grad: var(--hero-grad-l);
 
       --radius: 14px;
@@ -78,7 +79,7 @@
         --bg: var(--bg-d); --surface: var(--surface-d); --surface-2: var(--surface-2-d);
         --text: var(--text-d); --muted: var(--muted-d); --border: var(--border-d);
         --accent: var(--accent-d); --accent-2: var(--accent-2-d); --on-accent: var(--on-accent-d); --glow: var(--glow-d);
-        --tan: var(--tan-d); --band: var(--band-d); --band-surface: var(--band-surface-d);
+        --link: var(--link-d); --tan: var(--tan-d); --band: var(--band-d); --band-surface: var(--band-surface-d);
         --band-text: var(--band-text-d); --band-muted: var(--band-muted-d); --hero-grad: var(--hero-grad-d);
       }
     }
@@ -87,7 +88,7 @@
       --bg: var(--bg-l); --surface: var(--surface-l); --surface-2: var(--surface-2-l);
       --text: var(--text-l); --muted: var(--muted-l); --border: var(--border-l);
       --accent: var(--accent-l); --accent-2: var(--accent-2-l); --on-accent: var(--on-accent-l); --glow: var(--glow-l);
-      --tan: var(--tan-l); --band: var(--band-l); --band-surface: var(--band-surface-l);
+      --link: var(--link-l); --tan: var(--tan-l); --band: var(--band-l); --band-surface: var(--band-surface-l);
       --band-text: var(--band-text-l); --band-muted: var(--band-muted-l); --hero-grad: var(--hero-grad-l);
       color-scheme: light;
     }
@@ -95,7 +96,7 @@
       --bg: var(--bg-d); --surface: var(--surface-d); --surface-2: var(--surface-2-d);
       --text: var(--text-d); --muted: var(--muted-d); --border: var(--border-d);
       --accent: var(--accent-d); --accent-2: var(--accent-2-d); --on-accent: var(--on-accent-d); --glow: var(--glow-d);
-      --tan: var(--tan-d); --band: var(--band-d); --band-surface: var(--band-surface-d);
+      --link: var(--link-d); --tan: var(--tan-d); --band: var(--band-d); --band-surface: var(--band-surface-d);
       --band-text: var(--band-text-d); --band-muted: var(--band-muted-d); --hero-grad: var(--hero-grad-d);
       color-scheme: dark;
     }
@@ -113,6 +114,7 @@
         --on-accent: light-dark(var(--on-accent-l), var(--on-accent-d));
         --glow: light-dark(var(--glow-l), var(--glow-d));
         --tan: light-dark(var(--tan-l), var(--tan-d));
+        --link: light-dark(var(--link-l), var(--link-d));
         --band: light-dark(var(--band-l), var(--band-d));
         --band-surface: light-dark(var(--band-surface-l), var(--band-surface-d));
         --band-text: light-dark(var(--band-text-l), var(--band-text-d));
@@ -138,11 +140,11 @@
       -webkit-font-smoothing: antialiased;
     }
     img { max-width: 100%; display: block; }
-    a { color: var(--accent); text-underline-offset: .18em; }
+    a { color: var(--link); text-underline-offset: .18em; }
     h1, h2, h3 { line-height: 1.2; margin: 0; text-wrap: balance; letter-spacing: -.015em; }
     h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: 0; }
     p { margin: 0; text-wrap: pretty; }
-    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+    :focus-visible { outline: 3px solid var(--link); outline-offset: 3px; border-radius: 6px; }
     ::selection { background: var(--accent); color: var(--on-accent); }
 
     .wrap { width: min(100% - 2 * var(--gutter), var(--max)); margin-inline: auto; }
@@ -197,7 +199,7 @@
     .hero { position: relative; overflow: hidden; background: var(--hero-grad); padding-block: clamp(2.5rem, 7vw, 4.5rem) clamp(2.5rem, 6vw, 4rem); }
     #hero3d { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
     .hero::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
-      background: linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 88%, transparent) 34%, transparent 62%); }
+      background: linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 88%, transparent) 55%, transparent 85%); }
     .hero .wrap { position: relative; z-index: 2; }
     .avatar {
       width: clamp(7rem, 18vw, 10rem); aspect-ratio: 1; border-radius: 50%;
@@ -207,7 +209,7 @@
     .eyebrow {
       display: inline-flex; align-items: center; gap: .5rem;
       font: 500 .78rem/1 var(--mono); text-transform: uppercase; letter-spacing: .08em;
-      color: var(--accent); background: var(--glow); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+      color: var(--link); background: var(--glow); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
       padding: .45rem .75rem; border-radius: 999px; margin-block-end: 1rem;
     }
     .eyebrow::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px rgb(34 197 94 / .25); }
@@ -215,7 +217,7 @@
     .hero h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(3rem, 8.5vw, 6.8rem); line-height: .99; letter-spacing: -.01em; margin-block-start: 1.1rem; }
     .h1-mask { display: block; overflow: hidden; padding-bottom: .09em; margin-bottom: -.09em; }
     .h1-mask > span { display: block; }
-    .h1-tan { color: var(--tan); }
+    .h1-tan { color: var(--link); }
     .h1-tail { font-size: .34em; font-style: italic; }
     .h1-tail::before { content: "\2014  "; }
     @media (prefers-reduced-motion: no-preference) {
@@ -247,11 +249,12 @@
 
     .hero-cards { display: grid; gap: clamp(1rem, 3.5vw, 2.5rem); grid-template-columns: 1fr; margin-block-start: 2rem; }
     @media (min-width: 52rem) { .hero-cards { grid-template-columns: repeat(3, 1fr); } }
-    .hcard { display: flex; flex-direction: column; gap: .55rem; min-height: 8.4rem; padding: 1.15rem 1.25rem;
+    .hcard { position: relative; display: flex; flex-direction: column; gap: .55rem; min-height: 8.4rem; padding: 1.15rem 1.25rem;
       border-radius: 10px; background: #232529; color: #ece5d3; border: 1px solid rgb(236 229 211 / .14); box-shadow: var(--shadow); }
     .hcard .k { font: 500 .66rem/1 var(--mono); letter-spacing: .24em; text-transform: uppercase; color: #b39d74; }
     .hcard p { font-family: var(--serif); font-size: 1.05rem; line-height: 1.35; }
     .hcard a { margin-block-start: auto; color: #ece5d3; text-decoration: none; font: 500 .66rem/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; }
+    .hcard a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
     .hcard a .arr { display: inline-block; }
     @media (prefers-reduced-motion: no-preference) {
       .hcard { transition: transform .5s var(--ease); }
@@ -265,12 +268,12 @@
     .section-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: .5rem 1rem; margin-block-end: 1.5rem; }
     .section-head h2 { font-size: clamp(1.9rem, 3.6vw, 2.7rem); font-weight: 600; }
     .section-head p { color: var(--muted); max-width: 40rem; margin-block-start: .35rem; }
-    .section-head .more { font-weight: 600; text-decoration: none; white-space: nowrap; }
+    .section-head .more { color: var(--link); font-weight: 600; text-decoration: none; white-space: nowrap; }
     .section-head .more:hover { text-decoration: underline; }
     .count {
       display: inline-grid; place-items: center; min-width: 1.75rem; height: 1.75rem; padding-inline: .45rem;
       margin-inline-start: .5rem; vertical-align: .2em; border-radius: 999px;
-      font: 600 .8rem/1 var(--mono); color: var(--accent); background: var(--glow);
+      font: 600 .8rem/1 var(--mono); color: var(--link); background: var(--glow);
     }
 
     /* ---------- Cards ---------- */
@@ -295,9 +298,9 @@
     .card h3 a { color: var(--text); text-decoration: none; }
     .card h3 a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
     .card h3 a:focus-visible { outline: none; }
-    .card:has(h3 a:focus-visible) { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .card:has(h3 a:focus-visible) { outline: 3px solid var(--link); outline-offset: 3px; }
     .card .desc { color: var(--muted); font-size: .95rem; flex: 1; }
-    .card .url { font: 500 .78rem/1.4 var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+    .card .url { font: 500 .78rem/1.4 var(--mono); color: var(--link); overflow-wrap: anywhere; }
     .meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; font-size: .85rem; color: var(--muted); }
     .lang { display: inline-flex; align-items: center; gap: .35rem; }
     .lang::before { content: ""; width: .65rem; height: .65rem; border-radius: 50%; background: var(--dot, var(--muted)); }
@@ -305,11 +308,11 @@
       display: inline-block; padding: .2rem .55rem; border-radius: 999px;
       font: 500 .72rem/1.4 var(--mono); color: var(--muted); background: var(--surface-2); border: 1px solid var(--border);
     }
-    .tag.live { color: #15803d; background: rgb(34 197 94 / .12); border-color: rgb(34 197 94 / .3); }
+    .tag.live { color: #126e33; background: rgb(34 197 94 / .12); border-color: rgb(34 197 94 / .3); }
     :root[data-theme="dark"] .tag.live { color: #4ade80; }
     @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tag.live { color: #4ade80; } }
     .card .links { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: .5rem 1rem; font-size: .88rem; font-weight: 600; }
-    .card .links a { text-decoration: none; }
+    .card .links a { color: var(--link); text-decoration: none; }
     .card .links a:hover { text-decoration: underline; }
 
     .featured .card { padding: 1.5rem; }
@@ -348,6 +351,8 @@
     #projects .tag { background: transparent; color: var(--band-muted); border-color: color-mix(in srgb, var(--band-text) 22%, transparent); }
     #projects .tag.live { color: #4ade80; background: rgb(34 197 94 / .12); border-color: rgb(34 197 94 / .3); }
     #projects .more { color: var(--tan); }
+    /* band is dark in both themes: links/counts there keep the light-on-dark tan */
+    #projects .card .links a, #projects .count { color: var(--tan); }
     .about-top { display: grid; gap: 1.5rem; grid-template-columns: 1fr; align-items: start; margin-block-end: .5rem; }
     @media (min-width: 52rem) { .about-top { grid-template-columns: auto 1fr; } .about-top .section-head { margin-block-end: 0; } }
 
@@ -412,7 +417,7 @@
     .veer-msg.bot { align-self: flex-start; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
     .veer-msg.user { align-self: flex-end; background: var(--accent); color: var(--on-accent); }
     .veer-msg a { color: inherit; text-decoration: underline; }
-    .veer-msg.bot a { color: var(--accent); }
+    .veer-msg.bot a { color: var(--link); }
     /* Typing indicator: reuses the bot bubble treatment so it reads as "Veer is
        replying" rather than a new UI element, with three bouncing dots in place
        of text while the reply is prepared. */
@@ -437,7 +442,7 @@
     /* Small persistent chip that re-opens the full suggestion row after it's
        been cleared, so topic discovery isn't a first-open-only affordance. */
     .veer-chip.veer-chip-more {
-      background: transparent; border-style: dashed; color: var(--accent);
+      background: transparent; border-style: dashed; color: var(--link);
       display: inline-flex; align-items: center; gap: .3rem;
     }
     .veer-chip.veer-chip-more svg { width: .8rem; height: .8rem; }
